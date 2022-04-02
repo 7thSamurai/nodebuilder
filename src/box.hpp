@@ -26,9 +26,12 @@ public:
             max_.y = p.y;
     }
 
-    Vec2<T> min() const { return min; }
-    Vec2<T> max() const { return max; }
+    Vec2<T> min() const { return min_; }
+    Vec2<T> max() const { return max_; }
 
 private:
     Vec2<T> min_, max_;
 }; 
+
+using Boxi = Box<int>;
+using Boxf = Box<float>;

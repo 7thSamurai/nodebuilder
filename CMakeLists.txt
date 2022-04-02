@@ -4,6 +4,7 @@ project(nodebuilder)
 
 add_executable(nodebuilder
     src/main.cpp
+    src/splitter.cpp
     src/wad.cpp)
 
 target_compile_features(nodebuilder PRIVATE cxx_std_17)

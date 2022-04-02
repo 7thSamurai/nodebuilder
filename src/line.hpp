@@ -1,6 +1,6 @@
 #pragma once
 
-#include "line.hpp"
+#include "point.hpp"
 
 class Line
 {

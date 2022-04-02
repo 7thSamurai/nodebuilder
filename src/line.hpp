@@ -1,14 +1,15 @@
 #pragma once
 
-#include "point.hpp"
+#include "vec.hpp"
 
+template <typename T>
 class Line
 {
 public:
     Line() {
     }
 
-    Line(const Point &a, const Point &b) {
+    Line(const Vec2<T> &a, const Vec2<T> &b) {
         this->a = a;
         this->b = b;
     }
@@ -21,17 +22,20 @@ public:
         return a != l.a || b != l.b;
     }
     
-    int rise() const {
+    T rise() const {
         return b.y - a.y;
     }
     
-    int run() const {
+    T run() const {
         return b.x - a.x;
     }
     
-    int slope() const {
+    float slope() const {
         return static_cast<float>(rise()) / static_cast<float>(run());
     }
     
-    Point a, b;
-}; 
+    Vec2<T> a, b;
+};
+
+using Linei = Line<int>;
+using Linef = Line<float>;

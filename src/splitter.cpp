@@ -5,13 +5,13 @@
 Splitter::Splitter() : p(), dx(0.0f), dy(0.0f) {
 }
 
-Splitter::Splitter(const Line &line) {
+Splitter::Splitter(const Linef &line) {
     p  = line.a;
     dx = line.b.x - line.a.x;
     dy = line.b.y - line.a.y; 
 }
 
-Point Splitter::intersect_at(const Line &l) const {
+Vec2f Splitter::intersect_at(const Linef &l) const {
     // Derived from "y - y1 = m(x - x1)"
     float a1 = dy;
     float b1 = -dx;
@@ -25,21 +25,21 @@ Point Splitter::intersect_at(const Line &l) const {
     
     if (det == 0.0f) {
         std::cerr << "Error lines are parallel" << std::endl;
-        return Point(0, 0);
+        return Vec2f(0, 0);
     }
     
     float x = (b2 * c1 - b1 * c2) / det;
     float y = (a1 * c2 - a2 * c1) / det;
     
-    return Point(static_cast<int>(x), static_cast<int>(y));
+    return Vec2f(static_cast<int>(x), static_cast<int>(y));
 }
 
-int Splitter::side_of(const Point &pt) const {
+int Splitter::side_of(const Vec2f &pt) const {
     // Cross-Product
     return  Common::sign(dx * (pt.y - p.y) - dy * (pt.x - p.x));
 }
 
-int Splitter::side_of(const Line &l) const {
+int Splitter::side_of(const Linef &l) const {
     int s1 = side_of(l.a);
     int s2 = side_of(l.b);
 

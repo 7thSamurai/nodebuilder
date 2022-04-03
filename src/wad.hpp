@@ -19,6 +19,9 @@ public:
     void *read(const std::string &name, std::size_t &size);
     void write(const std::string &name, const void *data, std::size_t size);
 
+    void *read_map_lump(const std::string &map, const std::string &name, std::size_t &size);
+    void write_map_lump(const std::string &map, const std::string &name, const void *data, std::size_t size);
+
     void remove(const std::string &name);
 
 private:
@@ -40,8 +43,15 @@ private:
         std::uint8_t *cache_data;
     };
 
+    void *read(LumpInfo *lump, std::size_t &size);
+    void write(LumpInfo *lump, const void *data, std::size_t size);
+
     LumpInfo *find_lump(const std::string &name);
+    LumpInfo *find_map_lump(const std::string &map, const std::string &name);
+    
     std::size_t lump_index(const LumpInfo *lump);
+    bool is_map(const char *name);
+    void find_maps();
 
     Header header;
     std::vector<LumpInfo> lumps;
@@ -49,4 +59,6 @@ private:
     std::ifstream file;
     std::string path_;
     bool changed;
+    
+    LumpInfo *map_start, *map_end;
 };

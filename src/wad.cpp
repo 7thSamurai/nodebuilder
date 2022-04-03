@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 
-Wad::Wad(const std::string &path) : path_(path), changed(false) {
+Wad::Wad(const std::string &path) : path_(path), changed(false), map_start(nullptr), map_end(nullptr) {
     file.open(path, std::ios::in | std::ios::binary);
     if (!file.good())
         throw std::runtime_error("Unable to open file " + path);
@@ -32,6 +32,8 @@ Wad::Wad(const std::string &path) : path_(path), changed(false) {
 
         lumps.push_back(lump);
     }
+    
+    find_maps();
 }
 
 Wad::~Wad() {
@@ -53,7 +55,7 @@ bool Wad::save(const std::string &new_path) {
         if (!changed)
             return true;
 
-        temp_path = path_ + "XXXXXX";
+        temp_path = path_ + ".XXXXXX";
     }
 
     // Open the output file
@@ -157,6 +159,53 @@ void *Wad::read(const std::string &name, std::size_t &size) {
     if (!lump)
         return nullptr;
 
+    return read(lump, size);
+}
+
+void Wad::write(const std::string &name, const void *data, std::size_t size) {
+    auto lump = find_lump(name);
+    if (!lump) {
+        // TODO
+        return;
+    }
+
+    write(lump, data, size);
+}
+
+void *Wad::read_map_lump(const std::string &map, const std::string &name, std::size_t &size) {
+    auto lump = find_map_lump(map, name);
+    if (!lump)
+        return nullptr;
+
+    return read(lump, size);
+}
+
+void Wad::write_map_lump(const std::string &map, const std::string &name, const void *data, std::size_t size) {
+    auto lump = find_map_lump(map, name);
+    if (!lump) {
+        // TODO
+        return;
+    }
+
+    write(lump, data, size);
+}
+
+void Wad::remove(const std::string &name) {
+    auto lump = find_lump(name);
+    if (!lump)
+        return;
+
+    if (lump->new_data)
+        delete[] lump->new_data;
+    if (lump->cache_data)
+        delete[] lump->cache_data;
+
+    lumps.erase(lumps.begin() + lump_index(lump));
+    changed = true;
+    find_maps();
+}
+
+void *Wad::read(LumpInfo *lump, std::size_t &size) {
     auto buffer = new std::uint8_t[lump->lump.size];
 
     if (lump->new_data) {
@@ -175,13 +224,7 @@ void *Wad::read(const std::string &name, std::size_t &size) {
     return static_cast<void*>(buffer);
 }
 
-void Wad::write(const std::string &name, const void *data, std::size_t size) {
-    auto lump = find_lump(name);
-    if (!lump) {
-        // TODO
-        return;
-    }
-
+void Wad::write(LumpInfo *lump, const void *data, std::size_t size) {
     // Delete any of the old stuff
     if (lump->new_data) {
         delete[] lump->new_data;
@@ -199,20 +242,6 @@ void Wad::write(const std::string &name, const void *data, std::size_t size) {
     changed = true;
 }
 
-void Wad::remove(const std::string &name) {
-    auto lump = find_lump(name);
-    if (!lump)
-        return;
-
-    if (lump->new_data)
-        delete[] lump->new_data;
-    if (lump->cache_data)
-        delete[] lump->cache_data;
-
-    lumps.erase(lumps.begin() + lump_index(lump));
-    changed = true;
-}
-
 Wad::LumpInfo *Wad::find_lump(const std::string &name) {
     // Look for a particular lump
     for (auto &lump : lumps) {
@@ -225,6 +254,90 @@ Wad::LumpInfo *Wad::find_lump(const std::string &name) {
     return nullptr;
 }
 
+Wad::LumpInfo *Wad::find_map_lump(const std::string &map, const std::string &name) {
+    if (!map_start || !map_end)
+        return nullptr;
+
+    LumpInfo *start = nullptr;
+    LumpInfo *end   = nullptr;
+
+    // Find the map marker
+    for (LumpInfo *lump = map_start; lump <= map_end; lump++) {
+        if (lump->lump.name[0] == map[0]) {
+            if (std::string(lump->lump.name, 8) == map) {
+                start = lump;
+                break;
+            }
+        }        
+    }
+    
+    // Find the end of the map's lumps
+    end = start + (&lumps.back()-end-10 >= 0 ? 10 : &lumps.back()-end);
+
+    // Now find the actual lump
+    for (LumpInfo *lump = start; lump <= end; lump++) {
+        // Don't take from another map's lumps
+        if (is_map(lump->lump.name))
+            return nullptr;
+    
+        if (lump->lump.name[0] == name[0]) {
+            if (std::string(lump->lump.name, 8) == name)
+                return lump;
+        }        
+    }
+    
+    return nullptr;
+}
+
 std::size_t Wad::lump_index(const LumpInfo *lump) {
     return lump - &lumps[0];
+}
+
+bool Wad::is_map(const char *name) {
+    if (name[0] == 'M') {
+        if (name[1] == 'A' && name[2] == 'P') {
+            if (!std::isdigit(name[3])) return false;
+            if (!std::isdigit(name[4])) return false;
+            if (name[5]) return false;
+            
+            return true;
+        }
+            
+        return false;
+    }
+        
+    if (name[0] == 'E') {
+        if (name[2] == 'M') {
+            if (!std::isdigit(name[1])) return false;
+            if (!std::isdigit(name[3])) return false;
+            if (name[4]) return false;
+                
+            return true;
+        }
+            
+        return false;
+   }
+   
+   return false;      
+}
+
+void Wad::find_maps() {
+    map_start = map_end = nullptr;
+
+    // Find the first map
+    std::size_t first;
+    for (first = 0; first < lumps.size(); first++) {
+        if (is_map(lumps[first].lump.name)) {
+            map_start = &lumps[first];
+            break;
+        }
+    }
+ 
+    // Find the last map
+    for (std::size_t end = lumps.size() - 1; end >= first; end--) {
+        if (is_map(lumps[first].lump.name)) {
+            map_end = &lumps[end] + (lumps.size()-end-11 >= 0 ? 10 : lumps.size()-end-1); // Add the correct offset without overflowing
+            break;
+        }
+    }
 }

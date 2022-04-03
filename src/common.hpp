@@ -21,4 +21,6 @@ template <typename T> int sign(const T &value) {
     return (T(0) < value) - (value < T(0));
 }
 
+const float PI = 3.141592653589793f;
+
 }

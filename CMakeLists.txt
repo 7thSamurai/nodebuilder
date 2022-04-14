@@ -8,6 +8,7 @@ project(nodebuilder)
 
 add_executable(nodebuilder
     src/main.cpp
+    src/map.cpp
     src/renderer.cpp
     src/splitter.cpp
     src/wad.cpp)

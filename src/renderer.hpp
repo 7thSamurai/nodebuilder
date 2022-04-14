@@ -8,11 +8,15 @@
 struct SDL_Window;
 struct SDL_Renderer;
 
+class Map;
+
 class Renderer
 {
 public:
     Renderer(const std::string &name, unsigned int width, unsigned int height);
     ~Renderer();
+
+    void setup(const Map &map);
 
     void draw_line(const Linei &line);
     void draw_box(const Boxi &box);

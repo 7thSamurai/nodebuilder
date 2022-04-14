@@ -13,12 +13,28 @@ public:
         this->y = y;
     }
     
-    bool operator == (const Vec2 &p) const {
-        return x == p.x && y == p.y;
+    Vec2 operator + (const Vec2 &v) const {
+        return Vec2(x + v.x, y + v.y);
     }
     
-    bool operator != (const Vec2 &p) const {
-        return x != p.x || y != p.y;
+    Vec2 operator - (const Vec2 &v) const {
+        return Vec2(x - v.x, y - v.y);
+    }
+    
+    Vec2 operator * (const Vec2 &v) const {
+        return Vec2(x * v.x, y * v.y);
+    }
+    
+    Vec2 operator / (const Vec2 &v) const {
+        return Vec2(x / v.x, y / v.y);
+    }
+    
+    bool operator == (const Vec2 &v) const {
+        return x == v.x && y == v.y;
+    }
+    
+    bool operator != (const Vec2 &v) const {
+        return x != v.x || y != v.y;
     }
 
     T x, y;

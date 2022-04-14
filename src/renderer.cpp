@@ -1,4 +1,5 @@
 #include "renderer.hpp"
+#include "map.hpp"
 #include "SDL2/SDL.h"
 #include <stdexcept>
 
@@ -22,6 +23,13 @@ Renderer::~Renderer() {
         SDL_DestroyWindow(window);
         
     SDL_Quit();
+}
+
+void Renderer::setup(const Map &map) {
+    offset = map.offset();
+    size   = map.size();
+
+    SDL_RenderSetLogicalSize(renderer, size.x, size.y);
 }
 
 void Renderer::draw_line(const Linei &line) {

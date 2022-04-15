@@ -151,10 +151,12 @@ std::uint32_t Wad::file_size() const {
     return size;
 }
 
-std::unique_ptr<std::uint8_t> Wad::read(const std::string &name, std::size_t &size) {
+std::unique_ptr<std::uint8_t[]> Wad::read(const std::string &name, std::size_t &size) {
     auto lump = find_lump(name);
-    if (!lump)
+    if (!lump) {
+        size = 0;
         return nullptr;
+    }
 
     return read(lump, size);
 }
@@ -186,10 +188,12 @@ bool Wad::insert(const std::string &after, const std::string &name, const void *
     return true;
 }
 
-std::unique_ptr<std::uint8_t> Wad::read_map_lump(const std::string &map, const std::string &name, std::size_t &size) {
+std::unique_ptr<std::uint8_t[]> Wad::read_map_lump(const std::string &map, const std::string &name, std::size_t &size) {
     auto lump = find_map_lump(map, name);
-    if (!lump)
+    if (!lump) {
+        size = 0;
         return nullptr;
+    }
 
     return read(lump, size);
 }
@@ -236,8 +240,8 @@ void Wad::remove(const std::string &name) {
     find_maps();
 }
 
-std::unique_ptr<std::uint8_t> Wad::read(LumpInfo *lump, std::size_t &size) {
-    auto buffer = std::make_unique<std::uint8_t>(lump->lump.size);
+std::unique_ptr<std::uint8_t[]> Wad::read(LumpInfo *lump, std::size_t &size) {
+    auto buffer = std::make_unique<std::uint8_t[]>(lump->lump.size);
 
     if (lump->new_data) {
         std::copy_n(lump->new_data, lump->lump.size, buffer.get());
@@ -251,6 +255,8 @@ std::unique_ptr<std::uint8_t> Wad::read(LumpInfo *lump, std::size_t &size) {
 
         // TODO: Cache the data
     }
+
+    size = lump->lump.size;
 
     return buffer;
 }
@@ -289,7 +295,7 @@ Wad::LumpInfo *Wad::find_lump(const std::string &name) {
     // Look for a particular lump
     for (auto &lump : lumps) {
         if (lump.lump.name[0] == name[0]) {
-            if (std::string(lump.lump.name, 8) == name)
+            if (!name.compare(0, 8, lump.lump.name))
                 return &lump;
         }
     }
@@ -307,24 +313,27 @@ Wad::LumpInfo *Wad::find_map_lump(const std::string &map, const std::string &nam
     // Find the map marker
     for (LumpInfo *lump = map_start; lump <= map_end; lump++) {
         if (lump->lump.name[0] == map[0]) {
-            if (std::string(lump->lump.name, 8) == map) {
+            if (!map.compare(0, 8, lump->lump.name)) {
                 start = lump;
                 break;
             }
         }
     }
 
+    if (!start)
+        return nullptr;
+
     // Find the end of the map's lumps
     end = start + (&lumps.back()-end-10 >= 0 ? 10 : &lumps.back()-end);
 
     // Now find the actual lump
-    for (LumpInfo *lump = start; lump <= end; lump++) {
+    for (LumpInfo *lump = start+1; lump <= end; lump++) {
         // Don't take from another map's lumps
         if (is_map(lump->lump.name))
             return nullptr;
 
         if (lump->lump.name[0] == name[0]) {
-            if (std::string(lump->lump.name, 8) == name)
+            if (!name.compare(0, 8, lump->lump.name))
                 return lump;
         }
     }

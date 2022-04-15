@@ -18,14 +18,17 @@ public:
 
     void setup(const Map &map);
 
+    void draw_map(const Map &map);
     void draw_line(const Linei &line);
     void draw_box(const Boxi &box);
     void draw_splitter(const Splitter &splitter);
 
+    void show();
+
 private:
     SDL_Window *window;
     SDL_Renderer *renderer;
-    
+
     Vec2i offset; // Map start offset
     Vec2i size;   // Map size
-}; 
+};

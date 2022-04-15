@@ -121,7 +121,7 @@ private:
     struct MapLump {
         bool changed;
         std::size_t size;
-        std::unique_ptr<std::uint8_t> data;
+        std::unique_ptr<std::uint8_t[]> data;
     };
 
     void find_bounds();

@@ -17,11 +17,11 @@ public:
     bool has_changed() const;
     std::uint32_t file_size() const;
 
-    std::unique_ptr<std::uint8_t> read(const std::string &name, std::size_t &size);
+    std::unique_ptr<std::uint8_t[]> read(const std::string &name, std::size_t &size);
     bool write(const std::string &name, const void *data, std::size_t size);
     bool insert(const std::string &after, const std::string &name, const void *data, std::size_t size);
 
-    std::unique_ptr<std::uint8_t> read_map_lump(const std::string &map, const std::string &name, std::size_t &size);
+    std::unique_ptr<std::uint8_t[]> read_map_lump(const std::string &map, const std::string &name, std::size_t &size);
     bool write_map_lump(const std::string &map, const std::string &name, const void *data, std::size_t size);
     bool insert_map_lump(const std::string &map, const std::string &after, const std::string &name, const void *data, std::size_t size);
 
@@ -46,7 +46,7 @@ private:
         std::uint8_t *cache_data;
     };
 
-    std::unique_ptr<std::uint8_t> read(LumpInfo *lump, std::size_t &size);
+    std::unique_ptr<std::uint8_t[]> read(LumpInfo *lump, std::size_t &size);
     void write(LumpInfo *lump, const void *data, std::size_t size);
     void insert(LumpInfo *after, const std::string &name, const void *data, std::size_t size);
 

@@ -9,7 +9,7 @@ public:
     Box() = default;
     Box(const Vec2<T> &min, const Vec2<T> &max) : min_(min), max_(max) {
     }
-    
+
     /**
      * Extends the bounding-box so that a point fits inside
      * @param p The point to fit inside
@@ -19,7 +19,7 @@ public:
             min_.x = p.x;
         else if (p.y < min_.y)
             min_.y = p.y;
-        
+
         if (p.x > max_.x)
             max_.x = p.x;
         else if (p.y > max_.y)
@@ -29,9 +29,12 @@ public:
     Vec2<T> min() const { return min_; }
     Vec2<T> max() const { return max_; }
 
+    T width () const { return max_.x - min_.x; }
+    T height() const { return max_.y - min_.y; }
+
 private:
     Vec2<T> min_, max_;
-}; 
+};
 
 using Boxi = Box<int>;
 using Boxf = Box<float>;

@@ -29,7 +29,7 @@ std::vector<Seg> Bsp::create_segs() {
         auto p1 = Vec2f(vertices[linedefs->start].x, vertices[linedefs->start].y);
         auto p2 = Vec2f(vertices[linedefs->end].x, vertices[linedefs->end].y);
 
-        segs.push_back(Seg(p1, p2, false, 0, 1));
+        segs.push_back(Seg(p1, p2, false, 0, i));
 
         // Two sided
         if (linedefs->flags & 0b100)

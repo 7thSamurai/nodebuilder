@@ -1,6 +1,7 @@
 #include "node.hpp"
 #include "renderer.hpp"
 #include <iostream>
+#include <climits>
 
 Node::Node() : left(nullptr), right(nullptr) {
 }
@@ -31,11 +32,11 @@ void Node::create(const std::vector<Seg> &segs, Renderer &renderer) {
     renderer.draw_box(bounds_);
     renderer.show();
 
-    int best_score = splitter_score(segs, 0);
+    int best_score = INT_MAX;
     int splitter   = 0;
 
     // Find the best splitter
-    for (auto i = 1; i < segs.size(); i++) {
+    for (auto i = 0; i < segs.size(); i++) {
         int score = splitter_score(segs, i);
 
         if ((score < best_score && score >= 0)) {
@@ -45,7 +46,7 @@ void Node::create(const std::vector<Seg> &segs, Renderer &renderer) {
     }
 
     // If no lines where split, then this is a leaf node
-    if (best_score == -1) {
+    if (best_score == INT_MAX) {
         segs_ = segs;
         return;
     }

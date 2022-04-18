@@ -12,9 +12,9 @@ public:
     }
 
     static Color random() {
-        int r = (128 + (rand() % 256)) / 2;
-        int g = (128 + (rand() % 256)) / 2;
-        int b = (128 + (rand() % 256)) / 2;
+        int r = (128 + (rand() % 128)) / 2;
+        int g = (128 + (rand() % 128)) / 2;
+        int b = (128 + (rand() % 128)) / 2;
 
         return Color(r, g, b);
     }

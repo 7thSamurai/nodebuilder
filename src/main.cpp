@@ -6,6 +6,11 @@
 #include "SDL2/SDL.h"
 
 int main(int argc, char **argv) {
+    /*Splitter splitter(Seg(Vec2f(-10, 0), Vec2f(10, 0), 0, 0, 0));
+    splitter.side_of(Vec2f(0, 5));
+
+    return 0;*/
+
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " [WAD PATH]" << std::endl;
         return 1;

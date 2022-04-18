@@ -14,11 +14,9 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
     if (!window)
         throw std::runtime_error("Error creating SDL window");
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
         throw std::runtime_error("Error creating SDL renderer");
-
-    //SDL_RenderSetLogicalSize(renderer, map_.size().x+2, map_.size().y+2);
 }
 
 Renderer::~Renderer() {
@@ -58,13 +56,15 @@ void Renderer::draw_line(const Linef &line) {
 }
 
 void Renderer::draw_box(const Boxf &box) {
-    auto p = convert(box.min());
+    //return;
+    auto pos  = convert(box.min());
+    auto size = convert(Vec2f(map_.offset().x, map_.offset().y) + box.max() - box.min());
 
     SDL_Rect rect = {
-        static_cast<int>(p.x),
-        static_cast<int>(p.y),
-        static_cast<int>(box.width()),
-        static_cast<int>(box.height())
+        static_cast<int>(pos.x),
+        static_cast<int>(pos.y),
+        static_cast<int>(size.x),
+        static_cast<int>(size.y)
     };
 
     SDL_SetRenderDrawColor(renderer, 0x80, 0x00, 0x80, 0xff);
@@ -169,6 +169,8 @@ void Renderer::draw_splitter(const Splitter &splitter) {
     // Extend the splitter to reach both ends of the screen
     SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0x00, 0xff);
     SDL_RenderDrawLine(renderer, p.x - run*dist, p.y - rise*dist, p.x + run*dist, p.y + rise*dist);
+    SDL_RenderDrawLine(renderer, p.x - run*dist - 1, p.y - rise*dist, p.x + run*dist - 1, p.y + rise*dist);
+    SDL_RenderDrawLine(renderer, p.x - run*dist + 1, p.y - rise*dist, p.x + run*dist + 1, p.y + rise*dist);
 
     SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
     SDL_RenderDrawLine(renderer, p.x, p.y, p.x + splitter.dx, p.y + splitter.dy);

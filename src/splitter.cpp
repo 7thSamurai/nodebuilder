@@ -107,8 +107,45 @@ std::pair<Polyf, Polyf> Splitter::cut(const Polyf &poly) const {
 }
 
 int Splitter::side_of(const Vec2f &pt) const {
-    // Cross-Product
-    return  Common::sign(dx * (pt.y - p.y) - dy * (pt.x - p.x));
+    if (!this->dx) {
+        if (pt.x > p.x-2 && pt.x < p.x+2)
+            return 0;
+        if (pt.x < p.x)
+            return this->dy > 0 ? 1 : -1;
+
+        return this->dy < 0 ? 1 : -1;
+    }
+    if (!this->dy) {
+        if (pt.y > p.y-2 && pt.y < p.y+2)
+            return 0;
+        if (pt.y < p.y)
+            return this->dx < 0 ? 1 : -1;
+
+        return this->dx > 0 ? 1 : -1;
+    }
+
+    float dx = p.x - pt.x;
+    float dy = p.y - pt.y;
+    float a  = this->dx*this->dx + this->dy*this->dy;
+    float b  = 2 * (this->dx*dx + this->dy*dy);
+    float c  = dx*dx+dy*dy - 2*2;
+    float d  = b*b - 4*a*c;
+
+    if (d > 0)
+        return 0;
+
+    dx = pt.x - p.x;
+    dy = pt.y - p.y;
+
+    float left  = dx * this->dy;
+    float right = dy * this->dx;
+
+    if (std::abs(left - right) < 0.5f)
+        return 0;
+    if (right < left)
+        return -1;
+
+    return 1;
 }
 
 int Splitter::side_of(const Seg &seg) const {

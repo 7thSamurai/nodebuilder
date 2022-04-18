@@ -40,7 +40,7 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
     for (auto i = 0; i < segs.size(); i++) {
         int score = splitter_score(segs, i);
 
-        if ((score < best_score && score >= 0)) {
+        if (score < best_score) {
             best_score = score;
             splitter   = i;
         }
@@ -92,7 +92,7 @@ int Node::splitter_score(const std::vector<Seg> &segs, unsigned int splitter_ind
 
     // No lines intersect
     if (!front_count || !back_count)
-        return -1;
+        return INT_MAX;
 
     int new_lines = front_count + back_count - segs.size();
     int diff = std::abs(front_count - back_count);

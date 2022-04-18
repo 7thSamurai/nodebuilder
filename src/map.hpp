@@ -92,6 +92,7 @@ public:
 
     bool valid() const;
 
+    Boxi bounds () const;
     Vec2i offset() const;
     Vec2i size  () const;
 
@@ -129,7 +130,7 @@ private:
 
     Wad &wad_;
     std::string map_;
-    Boxi bounds;
+    Boxi bounds_;
 
     MapLump things_;
     MapLump linedefs_;

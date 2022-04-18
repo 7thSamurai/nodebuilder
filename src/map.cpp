@@ -101,25 +101,29 @@ bool Map::valid() const {
     return valid;
 }
 
+Boxi Map::bounds() const {
+    return bounds_;
+}
+
 Vec2i Map::offset() const {
-    return bounds.min();
+    return bounds_.min();
 }
 
 Vec2i Map::size() const {
-    return bounds.max() - bounds.min();
+    return bounds_.max() - bounds_.min();
 }
 
 void Map::find_bounds() {
     if (!num_vertices()) {
-        bounds = Box(Vec2i(0, 0), Vec2i(0, 0));
+        bounds_ = Box(Vec2i(0, 0), Vec2i(0, 0));
         return;
     }
 
     auto vertices = get_vertices();
-    bounds = Boxi(Vec2i(vertices[0].x, vertices[0].y), Vec2i(vertices[0].x, vertices[0].y));
+    bounds_ = Boxi(Vec2i(vertices[0].x, vertices[0].y), Vec2i(vertices[0].x, vertices[0].y));
 
     for (auto i = 1; i < num_vertices(); i++) {
-        bounds.extend(Vec2i(vertices[i].x, vertices[i].y));
+        bounds_.extend(Vec2i(vertices[i].x, vertices[i].y));
     }
 }
 

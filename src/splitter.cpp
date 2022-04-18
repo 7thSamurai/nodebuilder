@@ -11,15 +11,15 @@ Splitter::Splitter(const Seg &seg) {
     dy = seg.p2().y - seg.p1().y;
 }
 
-Vec2f Splitter::intersect_at(const Seg &seg) const {
+Vec2f Splitter::intersect_at(const Linef &l) const {
     // Derived from "y - y1 = m(x - x1)"
     float a1 = dy;
     float b1 = -dx;
     float c1 = dy * p.x - dx * p.y;
 
-    float a2 = seg.p2().y - seg.p1().y;
-    float b2 = seg.p1().x - seg.p2().x;
-    float c2 = a2 * seg.p1().x + b2 * seg.p1().y;
+    float a2 = l.b.y - l.a.y;
+    float b2 = l.a.x - l.b.x;
+    float c2 = a2 * l.a.x + b2 * l.a.y;
 
     float det = a1 * b2 - a2 * b1;
 
@@ -32,6 +32,10 @@ Vec2f Splitter::intersect_at(const Seg &seg) const {
     float y = (a1 * c2 - a2 * c1) / det;
 
     return Vec2f(static_cast<int>(x), static_cast<int>(y));
+}
+
+Vec2f Splitter::intersect_at(const Seg &seg) const {
+    return intersect_at(seg.line());
 }
 
 std::pair<Seg, Seg> Splitter::cut(const Seg &seg) const {
@@ -53,6 +57,53 @@ std::pair<Seg, Seg> Splitter::cut(const Seg &seg) const {
     }
 
     return std::make_pair(l1, l2);
+}
+
+std::pair<Polyf, Polyf> Splitter::cut(const Polyf &poly) const {
+    Polyf left, right;
+
+    for (auto i = 0; i < poly.size(); i++) {
+        auto start = poly.at(i + 0);
+        auto end   = poly.at(i + 1);
+
+        int start_side = side_of(start);
+        int end_side   = side_of(end);
+
+        // If the line ends on the splitter
+        if (end_side == 0) {
+            left.add(end);
+            right.add(end);
+            continue;
+        }
+
+        // If the line is completely to one side of the splitter
+        if (start_side == end_side) {
+            if (start_side == -1)
+                right.add(end);
+            else
+                left.add(end);
+            continue;
+        }
+
+        // Else it intersects
+        auto p = intersect_at(Linef(start, end));
+
+        // If the line ends on the left of the splitter
+        if (end_side == -1) {
+            left.add(p);
+            right.add(p);
+            right.add(end);
+        }
+
+        // Or if the line ends on the right of the splitter
+        else {
+            right.add(p);
+            left.add(p);
+            left.add(end);
+        }
+    }
+
+    return std::make_pair(left, right);
 }
 
 int Splitter::side_of(const Vec2f &pt) const {

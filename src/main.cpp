@@ -3,6 +3,7 @@
 #include "map.hpp"
 #include "renderer.hpp"
 #include "bsp.hpp"
+#include "SDL2/SDL.h"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -12,7 +13,7 @@ int main(int argc, char **argv) {
 
     try {
         Wad wad(argv[1]);
-        Map map("E1M2", wad);
+        Map map("E1M1", wad);
 
         if (!map.load()) {
             std::cerr << "Error loading map!" << std::endl;
@@ -26,7 +27,18 @@ int main(int argc, char **argv) {
         Bsp bsp(map);
         bsp.build(renderer);
 
+        renderer.draw_map();
         renderer.show();
+
+        bool running = true;
+        SDL_Event event;
+
+        while (running) {
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT)
+                    running = false;
+            }
+        }
     }
     catch (std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;

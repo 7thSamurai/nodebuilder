@@ -12,7 +12,14 @@ Bsp::~Bsp() {
 
 void Bsp::build(Renderer &renderer) {
     auto segs = create_segs();
-    root = new Node(segs, renderer);
+
+    Polyf poly;
+    poly.add(Vec2f(map_.bounds().min().x, map_.bounds().min().y));
+    poly.add(Vec2f(map_.bounds().min().x, map_.bounds().max().y));
+    poly.add(Vec2f(map_.bounds().max().x, map_.bounds().max().y));
+    poly.add(Vec2f(map_.bounds().max().x, map_.bounds().min().y));
+
+    root = new Node(segs, poly, renderer);
 }
 
 void Bsp::save() {

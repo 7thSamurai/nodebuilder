@@ -4,7 +4,7 @@
 #include <vector>
 
 template <typename T>
-class Polygon
+class Poly
 {
 public:
     void add(const Vec2<T> &p) {
@@ -12,7 +12,7 @@ public:
     }
 
     Vec2<T> at(std::size_t i) const {
-        return points_.at(i);
+        return points_.at(i % size());
     }
 
     std::size_t size() const {
@@ -27,5 +27,5 @@ private:
     std::vector<Vec2<T>> points_;
 };
 
-using Polygonf = Polygon<int>;
-using Polygoni = Polygon<float>;
+using Polyi = Poly<int>;
+using Polyf = Poly<float>;

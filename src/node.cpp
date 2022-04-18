@@ -2,12 +2,13 @@
 #include "renderer.hpp"
 #include <iostream>
 #include <climits>
+#include <SDL2/SDL.h>
 
 Node::Node() : left(nullptr), right(nullptr) {
 }
 
-Node::Node(const std::vector<Seg> &segs, Renderer &renderer) : left(nullptr), right(nullptr) {
-    create(segs, renderer);
+Node::Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) : left(nullptr), right(nullptr) {
+    create(segs, poly, renderer);
 }
 
 Node::~Node() {
@@ -15,7 +16,7 @@ Node::~Node() {
     if (right) delete right;
 }
 
-void Node::create(const std::vector<Seg> &segs, Renderer &renderer) {
+void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) {
     // Find the bounding box of this node
     bounds_ = Boxf(segs[0].p1(), segs[0].p1());
     for (const auto &seg :segs) {
@@ -47,7 +48,9 @@ void Node::create(const std::vector<Seg> &segs, Renderer &renderer) {
 
     // If no lines where split, then this is a leaf node
     if (best_score == INT_MAX) {
-        segs_ = segs;
+        segs_  = segs;
+        renderer.add_poly(carve(segs, poly), Color::random());
+
         return;
     }
 
@@ -55,12 +58,12 @@ void Node::create(const std::vector<Seg> &segs, Renderer &renderer) {
     renderer.show();
 
     // Now actually split the node
-    std::vector<Seg> front_segs;
-    std::vector<Seg> back_segs;
+    std::vector<Seg> front_segs, back_segs;
     split(segs, splitter, front_segs, back_segs);
+    auto polys = Splitter(segs[splitter]).cut(poly);
 
-    left  = new Node(front_segs, renderer);
-    right = new Node(back_segs, renderer);
+    left  = new Node(front_segs, polys.second, renderer);
+    right = new Node(back_segs, polys.first, renderer);
 }
 
 int Node::splitter_score(const std::vector<Seg> &segs, unsigned int splitter_index) const {
@@ -118,4 +121,15 @@ void Node::split(const std::vector<Seg> &segs, unsigned int splitter_index, std:
             back_segs .push_back(Seg(new_lines.second));
         }
     }
+}
+
+Polyf Node::carve(const std::vector<Seg> &segs, const Polyf &poly) {
+    Polyf carved = poly;
+
+    for (const auto &seg : segs) {
+        auto polys = Splitter(seg).cut(carved);
+        carved = polys.second;
+    }
+
+    return carved;
 }

@@ -17,6 +17,8 @@ Node::~Node() {
 }
 
 void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) {
+    if (!renderer.running()) return;
+
     // Find the bounding box of this node
     bounds_ = Boxf(segs[0].p1(), segs[0].p1());
     for (const auto &seg :segs) {
@@ -62,7 +64,10 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
     split(segs, splitter, front_segs, back_segs);
     auto polys = Splitter(segs[splitter]).cut(poly);
 
+    if (!renderer.running()) return;
     left  = new Node(front_segs, polys.second, renderer);
+
+    if (!renderer.running()) return;
     right = new Node(back_segs, polys.first, renderer);
 }
 

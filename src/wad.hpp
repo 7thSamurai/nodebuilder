@@ -17,6 +17,8 @@ public:
     bool has_changed() const;
     std::uint32_t file_size() const;
 
+    std::vector<std::string> maps() const;
+
     std::unique_ptr<std::uint8_t[]> read(const std::string &name, std::size_t &size);
     bool write(const std::string &name, const void *data, std::size_t size);
     bool insert(const std::string &after, const std::string &name, const void *data, std::size_t size);
@@ -54,7 +56,7 @@ private:
     LumpInfo *find_map_lump(const std::string &map, const std::string &name);
 
     std::size_t lump_index(const LumpInfo *lump);
-    bool is_map(const char *name);
+    bool is_map(const char *name) const;
     void find_maps();
 
     Header header;

@@ -17,7 +17,6 @@ class Map;
 class Renderer
 {
 public:
-    Renderer();
     Renderer(const std::string &name, unsigned int width, unsigned int height, Map &map);
     ~Renderer();
 
@@ -31,6 +30,7 @@ public:
     void add_poly(const Polyf &poly, const Color &color);
 
     void show();
+    bool running();
 
 private:
     void draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot);
@@ -40,11 +40,14 @@ private:
     float converty(float y) const;
     Vec2f convert(const Vec2f &p) const;
 
+    bool drawing() const;
+
     SDL_Window *window;
     SDL_Renderer *renderer;
 
     Map &map_;
     unsigned int width_, height_;
+    bool running_;
 
     std::vector<std::pair<Polyf, Color>> polys;
 };

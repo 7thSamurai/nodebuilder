@@ -151,6 +151,18 @@ std::uint32_t Wad::file_size() const {
     return size;
 }
 
+std::vector<std::string> Wad::maps() const {
+    std::vector<std::string> maps;
+
+    // Find the names of all the maps
+    for (LumpInfo *lump = map_start; lump <= map_end; lump++) {
+        if (is_map(lump->lump.name))
+            maps.push_back(std::string(lump->lump.name));
+    }
+
+    return maps;
+}
+
 std::unique_ptr<std::uint8_t[]> Wad::read(const std::string &name, std::size_t &size) {
     auto lump = find_lump(name);
     if (!lump) {
@@ -345,7 +357,7 @@ std::size_t Wad::lump_index(const LumpInfo *lump) {
     return lump - &lumps[0];
 }
 
-bool Wad::is_map(const char *name) {
+bool Wad::is_map(const char *name) const {
     if (name[0] == 'M') {
         if (name[1] == 'A' && name[2] == 'P') {
             if (!std::isdigit(name[3])) return false;

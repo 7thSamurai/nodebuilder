@@ -6,7 +6,13 @@
 #include <algorithm>
 #include <climits>
 
-Renderer::Renderer(const std::string &name, unsigned int width, unsigned int height, Map &map) : map_(map), width_(width), height_(height) {
+Renderer::Renderer(const std::string &name, unsigned int width, unsigned int height, Map &map) : map_(map), width_(width), height_(height), running_(true) {
+    if (name.empty()) {
+        window   = nullptr;
+        renderer = nullptr;
+        return;
+    }
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         throw std::runtime_error("Error initializing SDL");
 
@@ -31,6 +37,9 @@ Renderer::~Renderer() {
 }
 
 void Renderer::draw_map() {
+    if (!drawing())
+        return;
+
     auto linedefs = map_.get_linedefs();
     auto vertices = map_.get_vertices();
 
@@ -58,6 +67,9 @@ void Renderer::draw_map() {
 }
 
 void Renderer::draw_line(const Linef &line) {
+    if (!drawing())
+        return;
+
     auto p1 = convert(line.a);
     auto p2 = convert(line.b);
 
@@ -65,6 +77,9 @@ void Renderer::draw_line(const Linef &line) {
 }
 
 void Renderer::draw_box(const Boxf &box) {
+    if (!drawing())
+        return;
+
     auto pos  = convert(box.min());
     auto size = convert(Vec2f(map_.offset().x, map_.offset().y) + box.max() - box.min());
 
@@ -80,6 +95,9 @@ void Renderer::draw_box(const Boxf &box) {
 }
 
 void Renderer::draw_poly(const Polyf &poly) {
+    if (!drawing())
+        return;
+
     for (auto i = 0; i < poly.size(); i++) {
         auto p1 = convert(poly.at(i+0));
         auto p2 = convert(poly.at(i+1));
@@ -89,6 +107,9 @@ void Renderer::draw_poly(const Polyf &poly) {
 
 // Warning: Extremelly hacky code (I am not really sure on the best way to do this, so I tossed this together real quick...)
 void Renderer::draw_filled_poly(const Polyf &poly, const Color &color) {
+    if (!drawing())
+        return;
+
     // Find the bounds of the polygon and convert them to screen space
     auto bounds = poly.bounds();
     bounds = Boxf(convert(bounds.min()), convert(bounds.max()));
@@ -189,6 +210,9 @@ void Renderer::draw_filled_poly(const Polyf &poly, const Color &color) {
 }
 
 void Renderer::draw_splitter(const Splitter &splitter) {
+    if (!drawing())
+        return;
+
     // TODO
     auto p = convert(splitter.p);
 
@@ -207,12 +231,37 @@ void Renderer::draw_splitter(const Splitter &splitter) {
 }
 
 void Renderer::add_poly(const Polyf &poly, const Color &color) {
+    if (!drawing())
+        return;
+
     polys.push_back(std::make_pair(poly, color));
 }
 
 void Renderer::show() {
+    if (!drawing())
+        return;
+
     SDL_RenderPresent(renderer);
     SDL_Delay(10); // TODO: Remove
+}
+
+bool Renderer::running() {
+    if (!drawing())
+        return running_;
+
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT)
+            running_ = false;
+
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE)
+                running_ = false;
+        }
+    }
+
+    return running_;
 }
 
 void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot) {
@@ -309,4 +358,8 @@ Vec2f Renderer::convert(const Vec2f &p) const {
         convertx(p.x),
         converty(p.y)
     );
+}
+
+bool Renderer::drawing() const {
+    return window && renderer;
 }

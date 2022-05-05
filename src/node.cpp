@@ -30,7 +30,7 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
         renderer.draw_line(seg.line());
 
     renderer.show();
-    renderer.draw_box(bounds_);
+    renderer.draw_poly(poly);
     renderer.show();
 
     int best_score = INT_MAX;

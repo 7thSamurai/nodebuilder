@@ -17,11 +17,11 @@ public:
     void extend(const Vec2<T> &p) {
         if (p.x < min_.x)
             min_.x = p.x;
-        else if (p.y < min_.y)
-            min_.y = p.y;
-
-        if (p.x > max_.x)
+        else if (p.x > max_.x)
             max_.x = p.x;
+
+        if (p.y < min_.y)
+            min_.y = p.y;
         else if (p.y > max_.y)
             max_.y = p.y;
     }
@@ -29,6 +29,7 @@ public:
     Vec2<T> min() const { return min_; }
     Vec2<T> max() const { return max_; }
 
+    Vec2<T> size() const { return max_ - min_; }
     T width () const { return max_.x - min_.x; }
     T height() const { return max_.y - min_.y; }
 

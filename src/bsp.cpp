@@ -13,16 +13,6 @@ Bsp::~Bsp() {
 void Bsp::build(Renderer &renderer) {
     auto segs = create_segs();
 
-    /*std::vector<Seg> segs;
-    segs.push_back(Seg(Vec2f(1376,-3360), Vec2f(1376,-3339), false, 0, 0));
-    segs.push_back(Seg(Vec2f(1544,-3384), Vec2f(1784,-3448), false, 0, 0));
-    segs.push_back(Seg(Vec2f(2026,-3648), Vec2f(1984,-3648), false, 0, 0));
-    segs.push_back(Seg(Vec2f(1984,-3648), Vec2f(1376,-3648), false, 0, 0));
-    segs.push_back(Seg(Vec2f(1376,-3648), Vec2f(1376,-3520), false, 0, 0));
-    segs.push_back(Seg(Vec2f(1376,-3392), Vec2f(1376,-3360), false, 0, 0));
-    segs.push_back(Seg(Vec2f(1376,-3520), Vec2f(1376,-3392), false, 0, 0));*/
-
-
     Polyf poly;
     poly.add(Vec2f(map_.bounds().min().x, map_.bounds().min().y));
     poly.add(Vec2f(map_.bounds().min().x, map_.bounds().max().y));

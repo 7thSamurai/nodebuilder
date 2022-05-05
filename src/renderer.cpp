@@ -17,6 +17,8 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
         throw std::runtime_error("Error creating SDL renderer");
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 }
 
 Renderer::~Renderer() {
@@ -34,29 +36,35 @@ void Renderer::draw_map() {
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
 
     for (auto i = 0; i < map_.num_linedefs(); i++) {
         auto p1 = convert(Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y));
         auto p2 = convert(Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y));
 
-        SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
+        draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
     }
 
     for (const auto &pair : polys)
-        draw_poly(pair.first, pair.second);
+        draw_filled_poly(pair.first, pair.second);
+
+    for (const auto &pair : polys) {
+        for (auto i = 0; i < pair.first.size(); i++) {
+            auto p1 = convert(pair.first.at(i+0));
+            auto p2 = convert(pair.first.at(i+1));
+
+            draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
+        }
+    }
 }
 
 void Renderer::draw_line(const Linef &line) {
     auto p1 = convert(line.a);
     auto p2 = convert(line.b);
 
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-    SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
+    draw_line(p1.x, p1.y, p2.x, p2.y, Color(0xff, 0xff, 0xff));
 }
 
 void Renderer::draw_box(const Boxf &box) {
-    //return;
     auto pos  = convert(box.min());
     auto size = convert(Vec2f(map_.offset().x, map_.offset().y) + box.max() - box.min());
 
@@ -71,88 +79,113 @@ void Renderer::draw_box(const Boxf &box) {
     SDL_RenderDrawRect(renderer, &rect);
 }
 
-void Renderer::draw_poly(const Polyf &poly, const Color &color) {
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-
-    // Find the minimum and maximum Y coords
-    int ymin = poly.at(0).y;
-    int ymax = poly.at(0).y;
-
-    for (auto i = 1; i < poly.size(); i++) {
-        int y = poly.at(i).y;
-
-        if (y < ymin)
-            ymin = y;
-        if (y > ymax)
-            ymax = y;
-    }
-
-    // Convert the Y coordinates to screen space
-    ymin = converty(ymin);
-    ymax = converty(ymax);
-
-    int xmin[ymax - ymin + 1];
-    int xmax[ymax - ymin + 1];
-
-    std::fill_n(xmin, ymax - ymin + 1, INT_MAX);
-    std::fill_n(xmax, ymax - ymin + 1, INT_MIN);
-
-    // Find the minium and maximum X values of each scanline
-    for (auto i = 0; i < poly.size(); i++) {
-        int x0 = convertx(poly.at(i+0).x);
-        int y0 = converty(poly.at(i+0).y);
-
-        int x1 = convertx(poly.at(i+1).x);
-        int y1 = converty(poly.at(i+1).y);
-
-        bool steep = false;
-        if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
-            std::swap(x0, y0);
-            std::swap(x1, y1);
-            steep = true;
-        }
-        if (x0 > x1) {
-            std::swap(x0, x1);
-            std::swap(y0, y1);
-        }
-
-        int dx = x1 - x0;
-        int dy = y1 - y0;
-        float derror2 = std::abs(dy) * 2;
-        float error = 0;
-        int y = y0;
-
-        for (int x = x0; x <= x1; x++) {
-            if (steep) {
-                if (y < xmin[x - ymin]) xmin[x - ymin] = y;
-                if (y > xmax[x - ymin]) xmax[x - ymin] = y;
-            }
-            else {
-                if (x < xmin[y - ymin]) xmin[y - ymin] = x;
-                if (x > xmax[y - ymin]) xmax[y - ymin] = x;
-            }
-
-            error += derror2;
-            if (error > dx) {
-                y += (y1 > y0 ? 1 : -1);
-                error -= dx*2;
-            }
-        }
-    }
-
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 0xff);
-
-    // Rasterize each scanline
-    for (int y = ymin; y <= ymax; y++)
-        SDL_RenderDrawLine(renderer, xmin[y - ymin], y, xmax[y - ymin], y);
-
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
-
+void Renderer::draw_poly(const Polyf &poly) {
     for (auto i = 0; i < poly.size(); i++) {
         auto p1 = convert(poly.at(i+0));
         auto p2 = convert(poly.at(i+1));
-        SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
+        draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x80, 0x00, 0x80));
     }
+}
+
+// Warning: Extremelly hacky code (I am not really sure on the best way to do this, so I tossed this together real quick...)
+void Renderer::draw_filled_poly(const Polyf &poly, const Color &color) {
+    // Find the bounds of the polygon and convert them to screen space
+    auto bounds = poly.bounds();
+    bounds = Boxf(convert(bounds.min()), convert(bounds.max()));
+
+    int xmin[height_];
+    int xmax[height_];
+
+    int linex_all[height_]; // All X points
+    int linex[height_];     // Anti-aliased X points
+
+    std::fill_n(xmin, sizeof(xmin)/sizeof(int), INT_MAX);
+    std::fill_n(xmax, sizeof(xmax)/sizeof(int), INT_MIN);
+
+    float slope;
+    bool left_edge;
+
+    // Find the minimum and maximum X coords of the line
+    // depending on if it is a left or right edge
+    auto plot = [&](int x, int y, float brightess) {
+        bool transparent = slope < 0.5f && brightess < 0.5f;
+
+        if (left_edge) {
+            if (x > linex[y]) {
+                linex_all[y] = x;
+                if (!transparent) linex[y] = x;
+            }
+        }
+        else {
+            if (x < linex[y]) {
+                linex_all[y] = x;
+                if (!transparent) linex[y] = x;
+            }
+        }
+    };
+
+    // Loop through each edge
+    for (auto i = 0; i < poly.size(); i++) {
+        // Convert the points to screen space
+        float x0 = convertx(poly.at(i+0).x);
+        float y0 = converty(poly.at(i+0).y);
+
+        float x1 = convertx(poly.at(i+1).x);
+        float y1 = converty(poly.at(i+1).y);
+
+        // Find the slope of the line
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        slope = std::abs(!dx ? 1.0f : dy / dx);
+
+        // Figure out if this edge is on the left or right
+        auto p = poly.at(i+0) + (poly.at(i+1) - poly.at(i+0))/2 + Vec2f(1, 0);
+        left_edge = poly.point_inside(p);
+
+        std::fill_n(linex_all, sizeof(linex_all)/sizeof(int), left_edge ? INT_MIN : INT_MAX);
+        std::fill_n(linex, sizeof(linex)/sizeof(int), left_edge ? INT_MIN : INT_MAX);
+
+        draw_line(x0, y0,  x1, y1, Color(), plot);
+
+        auto valid = [](int val) -> bool {
+            return val != INT_MIN && val != INT_MAX;
+        };
+
+        // Find the minimum and maximum x coords for all of the edges
+        if (y1 > y0) {
+            for (int y = y0; y <= y1; y++) {
+                int val;
+                if (valid(linex[y]))
+                    val = linex[y];
+                else if (valid(linex_all[y]))
+                    val = linex_all[y];
+                else
+                    continue;
+
+                if (val < xmin[y]) xmin[y] = val;
+                if (val > xmax[y]) xmax[y] = val;
+            }
+        }
+        else {
+            for (int y = y1; y <= y0; y++) {
+                int val;
+                if (valid(linex[y]))
+                    val = linex[y];
+                else if (valid(linex_all[y]))
+                    val = linex_all[y];
+                else
+                    continue;
+
+                if (val < xmin[y]) xmin[y] = val;
+                if (val > xmax[y]) xmax[y] = val;
+            }
+        }
+    }
+
+    // Rasterize each scanline
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 0xff);
+    for (int y = bounds.min().y+1; y <= bounds.max().y; y++)
+        SDL_RenderDrawLine(renderer, xmin[y], y, xmax[y], y);
 }
 
 void Renderer::draw_splitter(const Splitter &splitter) {
@@ -168,12 +201,9 @@ void Renderer::draw_splitter(const Splitter &splitter) {
 
     // Extend the splitter to reach both ends of the screen
     SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0x00, 0xff);
-    SDL_RenderDrawLine(renderer, p.x - run*dist, p.y - rise*dist, p.x + run*dist, p.y + rise*dist);
-    SDL_RenderDrawLine(renderer, p.x - run*dist - 1, p.y - rise*dist, p.x + run*dist - 1, p.y + rise*dist);
-    SDL_RenderDrawLine(renderer, p.x - run*dist + 1, p.y - rise*dist, p.x + run*dist + 1, p.y + rise*dist);
-
-    SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
-    SDL_RenderDrawLine(renderer, p.x, p.y, p.x + splitter.dx, p.y + splitter.dy);
+    draw_line(p.x - run*dist, p.y - rise*dist, p.x + run*dist, p.y + rise*dist, Color(0xff, 0xff, 0x00));
+    draw_line(p.x - run*dist - 1, p.y - rise*dist, p.x + run*dist - 1, p.y + rise*dist, Color(0xff, 0xff, 0x00));
+    draw_line(p.x - run*dist + 1, p.y - rise*dist, p.x + run*dist + 1, p.y + rise*dist, Color(0xff, 0xff, 0x00));
 }
 
 void Renderer::add_poly(const Polyf &poly, const Color &color) {
@@ -183,6 +213,87 @@ void Renderer::add_poly(const Polyf &poly, const Color &color) {
 void Renderer::show() {
     SDL_RenderPresent(renderer);
     SDL_Delay(10); // TODO: Remove
+}
+
+void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot) {
+    // Xiaolin Wu's line algorithm
+    auto ipart  = [](float x) -> int { return std::floor(x); };
+    auto round  = [](float x) -> float { return std::round(x); };
+    auto fpart  = [](float x) -> float { return x - std::floor(x); };
+    auto rfpart = [&](float x) -> float { return 1.0f - fpart(x); };
+
+    bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
+
+    if (steep) {
+        std::swap(x0, y0);
+        std::swap(x1, y1);
+    }
+    if (x0 > x1) {
+        std::swap(x0, x1);
+        std::swap(y0, y1);
+    }
+
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float gradient = !dx ? 1.0f : dy / dx;
+
+    // Handle first endpoint
+    float xend = round(x0);
+    float yend = y0 + gradient * (xend - x0);
+    float xgap = rfpart(x0 + 0.5f);
+    int xpxl1 = xend;
+    int ypxl1 = ipart(yend);
+
+    if (steep) {
+        plot(ypxl1,   xpxl1, rfpart(yend) * xgap);
+        plot(ypxl1+1, xpxl1,  fpart(yend) * xgap);
+    }
+    else {
+        plot(xpxl1, ypxl1  , rfpart(yend) * xgap);
+        plot(xpxl1, ypxl1+1,  fpart(yend) * xgap);
+    }
+    float intery = yend + gradient;
+
+    // Handle second endpoint
+    xend = round(x1);
+    yend = y1 + gradient * (xend - x1);
+    xgap = fpart(x1 + 0.5f);
+    int xpxl2 = xend;
+    int ypxl2 = ipart(yend);
+
+    if (steep) {
+        plot(ypxl2  , xpxl2, rfpart(yend) * xgap);
+        plot(ypxl2+1, xpxl2,  fpart(yend) * xgap);
+    }
+    else {
+        plot(xpxl2, ypxl2,   rfpart(yend) * xgap);
+        plot(xpxl2, ypxl2+1, fpart(yend) * xgap);
+    }
+
+    // Main loop
+    if (steep) {
+        for (int x = xpxl1 + 1; x < xpxl2; x++) {
+            plot(ipart(intery),   x, rfpart(intery));
+            plot(ipart(intery)+1, x, fpart(intery));
+            intery = intery + gradient;
+        }
+    }
+    else {
+        for (int x = xpxl1 + 1; x < xpxl2; x++) {
+            plot(x, ipart(intery),   rfpart(intery));
+            plot(x, ipart(intery)+1, fpart(intery));
+            intery = intery + gradient;
+       }
+    }
+}
+
+void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color) {
+    auto plot = [&](int x, int y, float brightness) {
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255*brightness);
+        SDL_RenderDrawPoint(renderer, x, y);
+    };
+
+    draw_line(x0, y0, x1, y1, color, plot);
 }
 
 float Renderer::convertx(float x) const {

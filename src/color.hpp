@@ -45,7 +45,7 @@ public:
         h += golden_ratio_conjugate;
         if (h > 1.0f) h -= 1.0f;
 
-        return from_hsv(h, 0.99f, 0.99f);
+        return from_hsv(h, 0.85f, 0.99f);
     }
 
     std::uint8_t r, g, b;

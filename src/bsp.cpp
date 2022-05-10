@@ -1,5 +1,4 @@
 #include "bsp.hpp"
-#include "map.hpp"
 #include "node.hpp"
 
 Bsp::Bsp(Map &map) : map_(map), root(nullptr) {
@@ -23,7 +22,20 @@ void Bsp::build(Renderer &renderer) {
 }
 
 void Bsp::save() {
-    // TODO
+    // Dont save if no nodes have been built
+    if (!root)
+        return;
+
+    // Recursively process the nodes
+    process_linedefs();
+    process_node(root);
+
+    // Replace the lumps
+    map_.replace_vertices(&vertices[0], vertices.size());
+    map_.replace_linedefs(&linedefs[0], linedefs.size());
+    map_.replace_segs(&segs[0], segs.size());
+    map_.replace_ssectors(&ssectors[0], ssectors.size());
+    map_.replace_nodes(&nodes[0], nodes.size());
 }
 
 std::vector<Seg> Bsp::create_segs() {
@@ -44,4 +56,90 @@ std::vector<Seg> Bsp::create_segs() {
     }
 
     return segs;
+}
+
+std::size_t Bsp::unique_vertex(int x, int y) {
+    // First check to see if the vertex already exists
+    for (auto i = 0; i < vertices.size(); i++) {
+        if (vertices[i].x == x && vertices[i].y == y)
+            return i;
+    }
+
+    // Otherwise create it
+    Map::Vertex vertex;
+    vertex.x = x;
+    vertex.y = y;
+    vertices.push_back(vertex);
+
+    return vertices.size() - 1;
+}
+
+// Not exactly nessary, but still might as well have this, as to insure unique vertices
+void Bsp::process_linedefs() {
+    auto vertices = map_.get_vertices();
+    auto linedefs = map_.get_linedefs();
+
+    for (auto i = 0; i < map_.num_linedefs(); i++, linedefs++) {
+        auto linedef = *linedefs;
+        linedef.start = unique_vertex(vertices[linedefs->start].x, vertices[linedefs->start].y);
+        linedef.end   = unique_vertex(vertices[linedefs->end].x, vertices[linedefs->end].y);
+
+        this->linedefs.push_back(linedef);
+    }
+}
+
+int Bsp::process_ssector(const Node *node) {
+    Map::SSector ssector;
+    ssector.count = node->segs().size();
+    ssector.first = segs.size();
+
+    // Process the segs
+    for (const auto &seg : node->segs()) {
+        Map::Seg map_seg;
+
+        map_seg.start   = unique_vertex(seg.p1().x, seg.p1().y);
+        map_seg.end     = unique_vertex(seg.p2().x, seg.p2().y);
+        map_seg.angle   = seg.angle();
+        map_seg.linedef = seg.linedef();
+        map_seg.dir     = seg.side();
+        map_seg.offset  = seg.offset();
+
+        segs.push_back(map_seg);
+    }
+
+    ssectors.push_back(ssector);
+
+    return ssectors.size() - 1;
+}
+
+int Bsp::process_node(const Node *node) {
+    // If the node is a leaf, create sub sector
+    if (node->leaf())
+        return process_ssector(node) | (1 << 15);
+
+    Map::Node map_node;
+    map_node.x  = node->splitter().p.x;
+    map_node.y  = node->splitter().p.y;
+    map_node.dx = node->splitter().dx;
+    map_node.dy = node->splitter().dy;
+
+    // Process the children nodes
+    map_node.child[0] = process_node(node->left());
+    map_node.child[1] = process_node(node->right());
+
+    // Left bounding box
+    map_node.lbounds[0] = node->left()->bounds().min().y;
+    map_node.lbounds[1] = node->left()->bounds().max().y;
+    map_node.lbounds[2] = node->left()->bounds().min().x;
+    map_node.lbounds[3] = node->left()->bounds().max().x;
+
+    // Right bounding box
+    map_node.lbounds[0] = node->left()->bounds().min().y;
+    map_node.lbounds[1] = node->left()->bounds().max().y;
+    map_node.lbounds[2] = node->left()->bounds().min().x;
+    map_node.lbounds[3] = node->left()->bounds().max().x;
+
+    nodes.push_back(map_node);
+
+    return nodes.size() - 1;
 }

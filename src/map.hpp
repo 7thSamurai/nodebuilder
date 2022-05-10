@@ -4,6 +4,7 @@
 #include "vec.hpp"
 #include <string>
 #include <memory>
+#include <algorithm>
 
 class Wad;
 
@@ -118,8 +119,27 @@ public:
     const Reject *get_reject()  const       { return reinterpret_cast<const Reject*>(reject_.data.get()); }
     const BlockMap *get_blockmap() const    { return reinterpret_cast<const BlockMap*>(blockmap_.data.get()); }
 
+    void replace_things(const Thing *things, std::size_t size)          { things_  .replace(reinterpret_cast<const std::uint8_t*>(things), size); }
+    void replace_linedefs(const LineDef *linedefs, std::size_t size)    { linedefs_.replace(reinterpret_cast<const std::uint8_t*>(linedefs), size); }
+    void replace_sidedefs(const SideDef *sidedefs, std::size_t size)    { sidedefs_.replace(reinterpret_cast<const std::uint8_t*>(sidedefs), size); }
+    void replace_vertices(const Vertex *vertices, std::size_t size)     { vertices_.replace(reinterpret_cast<const std::uint8_t*>(vertices), size); }
+    void replace_segs(const Seg *segs, std::size_t size)                { segs_    .replace(reinterpret_cast<const std::uint8_t*>(segs), size); }
+    void replace_ssectors(const SSector *ssectors, std::size_t size)    { ssectors_.replace(reinterpret_cast<const std::uint8_t*>(ssectors), size); }
+    void replace_nodes(const Node *nodes, std::size_t size)             { nodes_   .replace(reinterpret_cast<const std::uint8_t*>(nodes), size); }
+    void replace_sectors(const Sector *sectors, std::size_t size)       { sectors_ .replace(reinterpret_cast<const std::uint8_t*>(sectors), size); }
+    void replace_reject(const Reject *reject, std::size_t size)         { reject_  .replace(reinterpret_cast<const std::uint8_t*>(reject), size); }
+    void replace_blockmap(const BlockMap *blockmap, std::size_t size)   { blockmap_.replace(reinterpret_cast<const std::uint8_t*>(blockmap), size); }
+
 private:
     struct MapLump {
+        void replace(const std::uint8_t *data, std::size_t size) {
+            changed    = true;
+            this->size = size;
+            this->data = std::make_unique<std::uint8_t[]>(size);
+
+            std::copy_n(data, size, this->data.get());
+        }
+
         bool changed;
         std::size_t size;
         std::unique_ptr<std::uint8_t[]> data;

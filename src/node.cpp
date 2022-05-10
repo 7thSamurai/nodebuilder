@@ -4,20 +4,21 @@
 #include <climits>
 #include <SDL2/SDL.h>
 
-Node::Node() : left(nullptr), right(nullptr) {
+Node::Node() : left_(nullptr), right_(nullptr) {
 }
 
-Node::Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) : left(nullptr), right(nullptr) {
+Node::Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) : left_(nullptr), right_(nullptr) {
     create(segs, poly, renderer);
 }
 
 Node::~Node() {
-    if (left)  delete left;
-    if (right) delete right;
+    if (left_)  delete left_;
+    if (right_) delete right_;
 }
 
 void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) {
-    if (!renderer.running()) return;
+    if (!renderer.running())
+        return;
 
     // Find the bounding box of this node
     bounds_ = Boxf(segs[0].p1(), segs[0].p1());
@@ -64,11 +65,8 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
     split(segs, splitter, front_segs, back_segs);
     auto polys = Splitter(segs[splitter]).cut(poly);
 
-    if (!renderer.running()) return;
-    left  = new Node(front_segs, polys.second, renderer);
-
-    if (!renderer.running()) return;
-    right = new Node(back_segs, polys.first, renderer);
+    left_  = new Node(front_segs, polys.second, renderer);
+    right_ = new Node(back_segs, polys.first, renderer);
 }
 
 int Node::splitter_score(const std::vector<Seg> &segs, unsigned int splitter_index) const {

@@ -42,10 +42,11 @@ private:
         char name[8];
     };
 
-    struct LumpInfo {
+    class LumpInfo {
+    public:    
         Lump lump;
-        std::uint8_t *new_data;
-        std::uint8_t *cache_data;
+        std::unique_ptr<std::uint8_t[]> new_data;
+        std::unique_ptr<std::uint8_t[]> cache_data;
     };
 
     std::unique_ptr<std::uint8_t[]> read(LumpInfo *lump, std::size_t &size);

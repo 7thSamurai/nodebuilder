@@ -23,15 +23,13 @@ Wad::Wad(const std::string &path) : path_(path), changed(false), map_start(nullp
     // Read the lumps
     for (auto i = 0; i < header.num_lumps; i++) {
         LumpInfo lump;
-        lump.new_data   = nullptr;
-        lump.cache_data = nullptr;
 
         // Read and covert the data
         file.read(reinterpret_cast<char*>(&lump.lump), sizeof(Lump));
         lump.lump.pos  = Common::little32(lump.lump.pos);
         lump.lump.size = Common::little32(lump.lump.size);
 
-        lumps.push_back(lump);
+        lumps.push_back(std::move(lump));
     }
 
     find_maps();
@@ -39,14 +37,6 @@ Wad::Wad(const std::string &path) : path_(path), changed(false), map_start(nullp
 
 Wad::~Wad() {
     file.close();
-
-    // Clean up
-    for (auto &lump : lumps) {
-        if (lump.new_data)
-            delete[] lump.new_data;
-        if (lump.cache_data)
-            delete[] lump.cache_data;
-    }
 }
 
 bool Wad::save(const std::string &new_path) {
@@ -76,13 +66,13 @@ bool Wad::save(const std::string &new_path) {
             continue;
 
         if (lump.new_data) {
-            temp.write(reinterpret_cast<const char*>(lump.new_data), lump.lump.size);
+            temp.write(reinterpret_cast<const char*>(lump.new_data.get()), lump.lump.size);
         }
         else if (lump.cache_data) {
-            temp.write(reinterpret_cast<const char*>(lump.cache_data), lump.lump.size);
+            temp.write(reinterpret_cast<const char*>(lump.cache_data.get()), lump.lump.size);
         }
         else {
-            auto buffer = std::make_unique<char>(lump.lump.size);
+            auto buffer = std::make_unique<char[]>(lump.lump.size);
             file.seekg(lump.lump.pos);
             file.read(buffer.get(), lump.lump.size);
             temp.write(buffer.get(), lump.lump.size);
@@ -124,11 +114,8 @@ bool Wad::save(const std::string &new_path) {
     // Clear out any of the new data
     for (auto &lump : lumps) {
         if (lump.new_data) {
-            if (lump.cache_data)
-                delete[] lump.cache_data;
-
-            lump.cache_data = lump.new_data;
-            lump.new_data   = nullptr;
+ 			lump.cache_data.reset(nullptr);
+            lump.cache_data.swap(lump.new_data);
         }
     }
 
@@ -244,10 +231,8 @@ void Wad::remove(const std::string &name) {
     if (!lump)
         return;
 
-    if (lump->new_data)
-        delete[] lump->new_data;
-    if (lump->cache_data)
-        delete[] lump->cache_data;
+	lump->new_data.reset(nullptr);
+	lump->cache_data.reset(nullptr);
 
     lumps.erase(lumps.begin() + lump_index(lump));
     changed = true;
@@ -258,18 +243,18 @@ std::unique_ptr<std::uint8_t[]> Wad::read(LumpInfo *lump, std::size_t &size) {
     auto buffer = std::make_unique<std::uint8_t[]>(lump->lump.size);
 
     if (lump->new_data) {
-        std::copy_n(lump->new_data, lump->lump.size, buffer.get());
+        std::copy_n(lump->new_data.get(), lump->lump.size, buffer.get());
     }
     else if (lump->cache_data) {
-        std::copy_n(lump->cache_data, lump->lump.size, buffer.get());
+        std::copy_n(lump->cache_data.get(), lump->lump.size, buffer.get());
     }
     else {
         file.seekg(lump->lump.pos);
         file.read(reinterpret_cast<char*>(buffer.get()), lump->lump.size);
 
         // Cache the data
-        lump->cache_data = new std::uint8_t[lump->lump.size];
-        std::copy_n(buffer.get(), lump->lump.size, lump->cache_data);
+        lump->cache_data = std::make_unique<std::uint8_t[]>(lump->lump.size);
+        std::copy_n(buffer.get(), lump->lump.size, lump->cache_data.get());
     }
 
     size = lump->lump.size;
@@ -279,18 +264,12 @@ std::unique_ptr<std::uint8_t[]> Wad::read(LumpInfo *lump, std::size_t &size) {
 
 void Wad::write(LumpInfo *lump, const void *data, std::size_t size) {
     // Delete any of the old stuff
-    if (lump->new_data) {
-        delete[] lump->new_data;
-    	lump->new_data = nullptr;
-    }
-    if (lump->cache_data) {
-        delete[] lump->cache_data;
-        lump->cache_data = nullptr;
-    }
+	lump->new_data.reset(nullptr);
+	lump->cache_data.reset(nullptr);
 
     // Copy the new data over
-    lump->new_data = new std::uint8_t[size];
-    std::copy_n(reinterpret_cast<const std::uint8_t*>(data), size, lump->new_data);
+    lump->new_data = std::make_unique<std::uint8_t[]>(size);
+    std::copy_n(reinterpret_cast<const std::uint8_t*>(data), size, lump->new_data.get());
     lump->lump.size = size;
 
     changed = true;
@@ -298,13 +277,11 @@ void Wad::write(LumpInfo *lump, const void *data, std::size_t size) {
 
 void Wad::insert(LumpInfo *after, const std::string &name, const void *data, std::size_t size) {
     LumpInfo lump;
-    lump.new_data   = nullptr;
-    lump.cache_data = nullptr;
 
     std::fill_n(lump.lump.name, 8, 0);
     std::copy_n(&name[0], std::min<std::size_t>(name.size(), 8), lump.lump.name);
 
-    lumps.insert(lumps.begin() + lump_index(after), lump);
+    lumps.insert(lumps.begin() + lump_index(after), std::move(lump));
     write(after + 1, data, size);
 }
 

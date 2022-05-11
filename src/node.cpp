@@ -1,8 +1,7 @@
 #include "node.hpp"
 #include "renderer.hpp"
-#include <iostream>
 #include <climits>
-#include <SDL2/SDL.h>
+#include "SDL2/SDL.h"
 
 Node::Node() : left_(nullptr), right_(nullptr) {
 }
@@ -104,7 +103,7 @@ int Node::splitter_score(const std::vector<Seg> &segs, unsigned int splitter_ind
 }
 
 void Node::split(const std::vector<Seg> &segs, unsigned int splitter_index, std::vector<Seg> &front_segs, std::vector<Seg> &back_segs) {
-    Splitter splitter(segs[splitter_index]);
+    splitter_ = Splitter(segs[splitter_index]);
 
     for (auto i = 0; i < segs.size(); i++) {
         if (i == splitter_index) {
@@ -112,14 +111,14 @@ void Node::split(const std::vector<Seg> &segs, unsigned int splitter_index, std:
             continue;
         }
 
-        int side = splitter.side_of(segs[i]);
+        int side = splitter_.side_of(segs[i]);
 
         if (side == -1)
             front_segs.push_back(segs[i]);
         else if (side == 1)
             back_segs.push_back(segs[i]);
         else {
-            auto new_lines = splitter.cut(segs[i]);
+            auto new_lines = splitter_.cut(segs[i]);
             front_segs.push_back(Seg(new_lines.first));
             back_segs .push_back(Seg(new_lines.second));
         }

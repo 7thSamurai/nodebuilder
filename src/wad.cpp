@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <iostream>
+#include <cstring>
 
 Wad::Wad(const std::string &path) : path_(path), changed(false), map_start(nullptr), map_end(nullptr) {
     file.open(path, std::ios::in | std::ios::binary);
@@ -307,7 +308,7 @@ Wad::LumpInfo *Wad::find_lump(const std::string &name) {
     // Look for a particular lump
     for (auto &lump : lumps) {
         if (lump.lump.name[0] == name[0]) {
-            if (!name.compare(0, 8, lump.lump.name))
+            if (!strncmp(lump.lump.name, &name[0], 8))
                 return &lump;
         }
     }
@@ -325,7 +326,7 @@ Wad::LumpInfo *Wad::find_map_lump(const std::string &map, const std::string &nam
     // Find the map marker
     for (LumpInfo *lump = map_start; lump <= map_end; lump++) {
         if (lump->lump.name[0] == map[0]) {
-            if (!map.compare(0, 8, lump->lump.name)) {
+            if (!strncmp(lump->lump.name, &map[0], 8)) {
                 start = lump;
                 break;
             }
@@ -345,7 +346,7 @@ Wad::LumpInfo *Wad::find_map_lump(const std::string &map, const std::string &nam
             return nullptr;
 
         if (lump->lump.name[0] == name[0]) {
-            if (!name.compare(0, 8, lump->lump.name))
+            if (!strncmp(lump->lump.name, &name[0], 8))
                 return lump;
         }
     }

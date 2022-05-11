@@ -7,7 +7,7 @@ Map::Map(const std::string &map, Wad &wad) : map_(map), wad_(wad) {
 }
 
 bool Map::load() {
-    auto read_entry = [&](const std::string &name, MapLump &lump, bool required) -> bool {
+    auto read_entry = [&](const std::string &name, auto &lump, bool required) -> bool {
         lump.data    = wad_.read_map_lump(map_, name, lump.size);
         lump.changed = false;
 
@@ -22,8 +22,8 @@ bool Map::load() {
     valid &= read_entry("VERTEXES", vertices_,  true);
     valid &= read_entry("SEGS",     segs_,      false);
     valid &= read_entry("SSECTORS", ssectors_,  false);
-    valid &= read_entry("SECTORS",  sectors_,   true);
     valid &= read_entry("NODES",    nodes_,     false);
+    valid &= read_entry("SECTORS",  sectors_,   true);
     valid &= read_entry("REJECT",   reject_,    false);
     valid &= read_entry("BLOCKMAP", blockmap_,  false);
 
@@ -34,7 +34,7 @@ bool Map::load() {
 }
 
 void Map::save() {
-    auto save_entry = [&](const std::string &name, const std::string &after, MapLump &lump) {
+    auto save_entry = [&](const std::string &name, const std::string &after, auto &lump) {
         if (!lump.data || !lump.changed)
             return;
 
@@ -51,16 +51,16 @@ void Map::save() {
     swap_byte_order();
 
     // Save the entries
-    save_entry("THINGS",   "",          things_);
-    save_entry("LINEDEFS", "",          linedefs_);
-    save_entry("SIDEDEFS", "",          sidedefs_);
-    save_entry("VERTEXES", "",          vertices_);
-    save_entry("SEGS",     "SECTORS",   segs_);
-    save_entry("SSECTORS", "SEGS",      ssectors_);
-    save_entry("NODES",    "SSECTORS",  nodes_);
-    save_entry("SECTORS",  "VERTEXES",  sectors_);
-    save_entry("REJECT",   "NODES",     reject_);
-    save_entry("BLOCKMAP", "REJECT",    blockmap_);
+    save_entry("THINGS",   "",         things_);
+    save_entry("LINEDEFS", "",         linedefs_);
+    save_entry("SIDEDEFS", "",         sidedefs_);
+    save_entry("VERTEXES", "",         vertices_);
+    save_entry("SEGS",     "VERTEXES", segs_);
+    save_entry("SSECTORS", "SEGS",     ssectors_);
+    save_entry("NODES",    "SSECTORS", nodes_);
+    save_entry("SECTORS",  "NODES",    sectors_);
+    save_entry("REJECT",   "SECTORS",  reject_);
+    save_entry("BLOCKMAP", "REJECT",   blockmap_);
 
     swap_byte_order();
 }

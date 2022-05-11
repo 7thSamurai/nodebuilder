@@ -97,47 +97,56 @@ public:
     Vec2i offset() const;
     Vec2i size  () const;
 
-    std::size_t num_things() const      { return things_.size   / sizeof(Thing); }
-    std::size_t num_linedefs() const    { return linedefs_.size / sizeof(LineDef); }
-    std::size_t num_sidedefs() const    { return sidedefs_.size / sizeof(SideDef); }
-    std::size_t num_vertices() const    { return vertices_.size / sizeof(Vertex); }
-    std::size_t num_segs() const        { return segs_.size     / sizeof(Seg); }
-    std::size_t num_ssectors() const    { return ssectors_.size / sizeof(SSector); }
-    std::size_t num_nodes() const       { return nodes_.size    / sizeof(Node); }
-    std::size_t num_sectors() const     { return sectors_.size  / sizeof(Sector); }
-    std::size_t num_reject()  const     { return reject_.size   / sizeof(Reject); }
-    std::size_t num_blockmap() const    { return blockmap_.size / sizeof(BlockMap); }
+    std::size_t num_things() const   { return things_.num(); }
+    std::size_t num_linedefs() const { return linedefs_.num();  }
+    std::size_t num_sidedefs() const { return sidedefs_.num(); }
+    std::size_t num_vertices() const { return vertices_.num(); }
+    std::size_t num_segs() const     { return segs_.num(); }
+    std::size_t num_ssectors() const { return ssectors_.num(); }
+    std::size_t num_nodes() const    { return nodes_.num(); }
+    std::size_t num_sectors() const  { return sectors_.num(); }
+    std::size_t num_reject()  const  { return reject_.num(); }
+    std::size_t num_blockmap() const { return blockmap_.num(); }
 
-    const Thing *get_things() const         { return reinterpret_cast<const Thing*>(things_.data.get()); }
-    const LineDef *get_linedefs() const     { return reinterpret_cast<const LineDef*>(linedefs_.data.get()); }
-    const SideDef *get_sidedefs() const     { return reinterpret_cast<const SideDef*>(sidedefs_.data.get()); }
-    const Vertex *get_vertices() const      { return reinterpret_cast<const Vertex*>(vertices_.data.get()); }
-    const Seg *get_segs() const             { return reinterpret_cast<const Seg*>(segs_.data.get()); }
-    const SSector *get_ssectors() const     { return reinterpret_cast<const SSector*>(ssectors_.data.get()); }
-    const Node *get_nodes() const           { return reinterpret_cast<const Node*>(nodes_.data.get()); }
-    const Sector *get_sectors() const       { return reinterpret_cast<const Sector*>(sectors_.data.get()); }
-    const Reject *get_reject()  const       { return reinterpret_cast<const Reject*>(reject_.data.get()); }
-    const BlockMap *get_blockmap() const    { return reinterpret_cast<const BlockMap*>(blockmap_.data.get()); }
+    auto get_things() const   { return things_.get(); }
+    auto get_linedefs() const { return linedefs_.get(); }
+    auto get_sidedefs() const { return sidedefs_.get(); }
+    auto get_vertices() const { return vertices_.get(); }
+    auto get_segs() const     { return segs_.get(); }
+    auto get_ssectors() const { return ssectors_.get(); }
+    auto get_nodes() const    { return nodes_.get(); }
+    auto get_sectors() const  { return sectors_.get(); }
+    auto get_reject()  const  { return reject_.get(); }
+    auto get_blockmap() const { return blockmap_.get(); }
 
-    void replace_things(const Thing *things, std::size_t size)          { things_  .replace(reinterpret_cast<const std::uint8_t*>(things), size); }
-    void replace_linedefs(const LineDef *linedefs, std::size_t size)    { linedefs_.replace(reinterpret_cast<const std::uint8_t*>(linedefs), size); }
-    void replace_sidedefs(const SideDef *sidedefs, std::size_t size)    { sidedefs_.replace(reinterpret_cast<const std::uint8_t*>(sidedefs), size); }
-    void replace_vertices(const Vertex *vertices, std::size_t size)     { vertices_.replace(reinterpret_cast<const std::uint8_t*>(vertices), size); }
-    void replace_segs(const Seg *segs, std::size_t size)                { segs_    .replace(reinterpret_cast<const std::uint8_t*>(segs), size); }
-    void replace_ssectors(const SSector *ssectors, std::size_t size)    { ssectors_.replace(reinterpret_cast<const std::uint8_t*>(ssectors), size); }
-    void replace_nodes(const Node *nodes, std::size_t size)             { nodes_   .replace(reinterpret_cast<const std::uint8_t*>(nodes), size); }
-    void replace_sectors(const Sector *sectors, std::size_t size)       { sectors_ .replace(reinterpret_cast<const std::uint8_t*>(sectors), size); }
-    void replace_reject(const Reject *reject, std::size_t size)         { reject_  .replace(reinterpret_cast<const std::uint8_t*>(reject), size); }
-    void replace_blockmap(const BlockMap *blockmap, std::size_t size)   { blockmap_.replace(reinterpret_cast<const std::uint8_t*>(blockmap), size); }
+    void replace_things(const Thing *things, std::size_t num)        { things_  .replace(things, num); }
+    void replace_linedefs(const LineDef *linedefs, std::size_t num)  { linedefs_.replace(linedefs, num); }
+    void replace_sidedefs(const SideDef *sidedefs, std::size_t num)  { sidedefs_.replace(sidedefs, num); }
+    void replace_vertices(const Vertex *vertices, std::size_t num)   { vertices_.replace(vertices, num); }
+    void replace_segs(const Seg *segs, std::size_t num)              { segs_    .replace(segs, num); }
+    void replace_ssectors(const SSector *ssectors, std::size_t num)  { ssectors_.replace(ssectors, num); }
+    void replace_nodes(const Node *nodes, std::size_t num)           { nodes_   .replace(nodes, num); }
+    void replace_sectors(const Sector *sectors, std::size_t num)     { sectors_ .replace(sectors, num); }
+    void replace_reject(const Reject *reject, std::size_t num)       { reject_  .replace(reject, num); }
+    void replace_blockmap(const BlockMap *blockmap, std::size_t num) { blockmap_.replace(blockmap, num); }
 
 private:
+	template <typename T>
     struct MapLump {
-        void replace(const std::uint8_t *data, std::size_t size) {
-            changed    = true;
-            this->size = size;
-            this->data = std::make_unique<std::uint8_t[]>(size);
+    	std::size_t num() const {
+    		return size / sizeof(T);
+    	}
+    
+    	const T *get() const {
+    		return reinterpret_cast<const T*>(data.get());
+    	}
+    
+        void replace(const T *data, std::size_t num) {
+            this->changed = true;
+            this->size    = num * sizeof(T);
+            this->data    = std::make_unique<std::uint8_t[]>(size);
 
-            std::copy_n(data, size, this->data.get());
+            std::copy_n(reinterpret_cast<const std::uint8_t*>(data), this->size, this->data.get());
         }
 
         bool changed;
@@ -152,14 +161,14 @@ private:
     std::string map_;
     Boxi bounds_;
 
-    MapLump things_;
-    MapLump linedefs_;
-    MapLump sidedefs_;
-    MapLump vertices_;
-    MapLump segs_;
-    MapLump ssectors_;
-    MapLump nodes_;
-    MapLump sectors_;
-    MapLump reject_;
-    MapLump blockmap_;
+    MapLump<Thing> things_;
+    MapLump<LineDef> linedefs_;
+    MapLump<SideDef> sidedefs_;
+    MapLump<Vertex> vertices_;
+    MapLump<Seg> segs_;
+    MapLump<SSector> ssectors_;
+    MapLump<Node> nodes_;
+    MapLump<Sector> sectors_;
+    MapLump<Reject> reject_;
+    MapLump<BlockMap> blockmap_;
 };

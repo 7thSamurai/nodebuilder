@@ -68,6 +68,7 @@ bool Wad::save(const std::string &new_path) {
 
     // Write all the lump data
     for (auto &lump : lumps) {
+    	// Save the position of the data for later
         lump.lump.pos = temp.tellp();
 
         // Skip any virtual lumps
@@ -81,10 +82,10 @@ bool Wad::save(const std::string &new_path) {
             temp.write(reinterpret_cast<const char*>(lump.cache_data), lump.lump.size);
         }
         else {
-            auto buffer = std::make_unique<std::uint8_t>(lump.lump.size);
+            auto buffer = std::make_unique<char>(lump.lump.size);
             file.seekg(lump.lump.pos);
-            file.read(reinterpret_cast<char*>(buffer.get()), lump.lump.size);
-            temp.write(reinterpret_cast<const char*>(buffer.get()), lump.lump.size);
+            file.read(buffer.get(), lump.lump.size);
+            temp.write(buffer.get(), lump.lump.size);
         }
     }
 
@@ -122,7 +123,7 @@ bool Wad::save(const std::string &new_path) {
 
     // Clear out any of the new data
     for (auto &lump : lumps) {
-        if (!lump.new_data) {
+        if (lump.new_data) {
             if (lump.cache_data)
                 delete[] lump.cache_data;
 
@@ -266,7 +267,9 @@ std::unique_ptr<std::uint8_t[]> Wad::read(LumpInfo *lump, std::size_t &size) {
         file.seekg(lump->lump.pos);
         file.read(reinterpret_cast<char*>(buffer.get()), lump->lump.size);
 
-        // TODO: Cache the data
+        // Cache the data
+        lump->cache_data = new std::uint8_t[lump->lump.size];
+        std::copy_n(buffer.get(), lump->lump.size, lump->cache_data);
     }
 
     size = lump->lump.size;
@@ -278,6 +281,7 @@ void Wad::write(LumpInfo *lump, const void *data, std::size_t size) {
     // Delete any of the old stuff
     if (lump->new_data) {
         delete[] lump->new_data;
+    	lump->new_data = nullptr;
     }
     if (lump->cache_data) {
         delete[] lump->cache_data;

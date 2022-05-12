@@ -115,7 +115,7 @@ int Bsp::process_ssector(const Node *node) {
 int Bsp::process_node(const Node *node) {
     // If the node is a leaf, create sub sector
     if (node->leaf())
-        return process_ssector(node) | (1 << 15);
+        return process_ssector(node) | (1 << 15); // Sub sector flag
 
     Map::Node map_node;
     map_node.x  = node->splitter().p.x;
@@ -134,10 +134,10 @@ int Bsp::process_node(const Node *node) {
     map_node.lbounds[3] = node->left()->bounds().max().x;
 
     // Right bounding box
-    map_node.lbounds[0] = node->left()->bounds().min().y;
-    map_node.lbounds[1] = node->left()->bounds().max().y;
-    map_node.lbounds[2] = node->left()->bounds().min().x;
-    map_node.lbounds[3] = node->left()->bounds().max().x;
+    map_node.rbounds[0] = node->right()->bounds().min().y;
+    map_node.rbounds[1] = node->right()->bounds().max().y;
+    map_node.rbounds[2] = node->right()->bounds().min().x;
+    map_node.rbounds[3] = node->right()->bounds().max().x;
 
     nodes.push_back(map_node);
 

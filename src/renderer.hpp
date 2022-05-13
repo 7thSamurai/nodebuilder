@@ -24,7 +24,7 @@ public:
     void draw_line(const Linef &line);
     void draw_box(const Boxf &box);
     void draw_poly(const Polyf &poly);
-    void draw_filled_poly(const Polyf &poly, const Color &color);
+    void draw_filled_poly(Polyf poly, const Color &color);
     void draw_splitter(const Splitter &splitter);
 
     void add_poly(const Polyf &poly, const Color &color);

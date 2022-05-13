@@ -16,12 +16,24 @@ public:
         return points_.at(i % size());
     }
 
+    Vec2<T> &at(std::size_t i) {
+        return points_.at(i % size());
+    }
+
     std::size_t size() const {
         return points_.size();
     }
 
     std::vector<Vec2<T>> &points() {
         return points_;
+    }
+
+    Vec2<T> operator [] (std::size_t i) const {
+        return at(i);
+    }
+
+    Vec2<T> &operator [] (std::size_t i) {
+        return at(i);
     }
 
     bool point_inside(const Vec2<T> &p) const {

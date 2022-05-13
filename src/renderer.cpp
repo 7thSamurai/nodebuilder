@@ -106,13 +106,17 @@ void Renderer::draw_poly(const Polyf &poly) {
 }
 
 // Warning: Extremelly hacky code (I am not really sure on the best way to do this, so I tossed this together real quick...)
-void Renderer::draw_filled_poly(const Polyf &poly, const Color &color) {
+void Renderer::draw_filled_poly(Polyf poly, const Color &color) {
     if (!drawing())
         return;
 
+    // Convert all the points to screen space
+    for (auto i = 0; i < poly.size(); i++)
+        poly[i] = convert(poly[i]);
+
     // Find the bounds of the polygon and convert them to screen space
     auto bounds = poly.bounds();
-    bounds = Boxf(convert(bounds.min()), convert(bounds.max()));
+    bounds = Boxf(bounds.min(), bounds.max());
 
     int xmin[height_];
     int xmax[height_];
@@ -147,12 +151,11 @@ void Renderer::draw_filled_poly(const Polyf &poly, const Color &color) {
 
     // Loop through each edge
     for (auto i = 0; i < poly.size(); i++) {
-        // Convert the points to screen space
-        float x0 = convertx(poly.at(i+0).x);
-        float y0 = converty(poly.at(i+0).y);
+        float x0 = poly.at(i+0).x;
+        float y0 = poly.at(i+0).y;
 
-        float x1 = convertx(poly.at(i+1).x);
-        float y1 = converty(poly.at(i+1).y);
+        float x1 = poly.at(i+1).x;
+        float y1 = poly.at(i+1).y;
 
         // Find the slope of the line
         float dx = x1 - x0;
@@ -334,7 +337,7 @@ float Renderer::convertx(float x) const {
 }
 
 float Renderer::converty(float y) const {
-    return (y - map_.offset().y) / map_.size().y * height_;
+    return height_ - (y - map_.offset().y) / map_.size().y * height_;
 }
 
 Vec2f Renderer::convert(const Vec2f &p) const {

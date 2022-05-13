@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <climits>
 
-Renderer::Renderer(const std::string &name, unsigned int width, unsigned int height, Map &map) : map_(map), width_(width), height_(height), running_(true) {
+Renderer::Renderer(const std::string &name, unsigned int width, unsigned int height, Map &map) : map_(map), running_(true) {
     if (name.empty()) {
         window   = nullptr;
         renderer = nullptr;
@@ -25,6 +25,9 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
         throw std::runtime_error("Error creating SDL renderer");
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    // Fix the aspect ratio
+    calc_aspect(width, height);
 }
 
 Renderer::~Renderer() {
@@ -332,12 +335,30 @@ void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &co
     draw_line(x0, y0, x1, y1, color, plot);
 }
 
+void Renderer::calc_aspect(int width, int height) {
+    auto want_aspect = static_cast<float>(map_.size().x) / static_cast<float>(map_.size().y);
+    auto real_aspect = static_cast<float>(width) / static_cast<float>(height);
+
+    float scale;
+
+    if (want_aspect > real_aspect)
+        scale = static_cast<float>(width) / static_cast<float>(map_.size().x);
+    else
+        scale = static_cast<float>(height) / static_cast<float>(map_.size().y);
+
+    width_  = map_.size().x * scale;
+    height_ = map_.size().y * scale;
+
+    offsetx_ = (width - width_)   / 2;
+    offsety_ = (height - height_) / 2;
+}
+
 float Renderer::convertx(float x) const {
-    return (x - map_.offset().x) / map_.size().x * width_;
+    return offsetx_ + (x - map_.offset().x) / map_.size().x * width_;
 }
 
 float Renderer::converty(float y) const {
-    return height_ - (y - map_.offset().y) / map_.size().y * height_;
+    return offsety_ + height_ - (y - map_.offset().y) / map_.size().y * height_;
 }
 
 Vec2f Renderer::convert(const Vec2f &p) const {

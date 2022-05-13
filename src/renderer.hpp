@@ -36,6 +36,8 @@ private:
     void draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot);
     void draw_line(float x0, float y0, float x1, float y1, const Color &color);
 
+    void calc_aspect(int width, int height);
+
     float convertx(float x) const;
     float converty(float y) const;
     Vec2f convert(const Vec2f &p) const;
@@ -47,6 +49,7 @@ private:
 
     Map &map_;
     unsigned int width_, height_;
+    unsigned int offsetx_, offsety_;
     bool running_;
 
     std::vector<std::pair<Polyf, Color>> polys;

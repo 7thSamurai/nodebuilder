@@ -173,33 +173,17 @@ void Renderer::draw_filled_poly(const Polyf &poly, const Color &color) {
         };
 
         // Find the minimum and maximum x coords for all of the edges
-        if (y1 > y0) {
-            for (int y = y0; y <= y1; y++) {
-                int val;
-                if (valid(linex[y]))
-                    val = linex[y];
-                else if (valid(linex_all[y]))
-                    val = linex_all[y];
-                else
-                    continue;
+        for (int y = std::min(y0, y1); y <= std::max(y0, y1); y++) {
+            int val;
+            if (valid(linex[y]))
+                val = linex[y];
+            else if (valid(linex_all[y]))
+                val = linex_all[y];
+            else
+                continue;
 
-                if (val < xmin[y]) xmin[y] = val;
-                if (val > xmax[y]) xmax[y] = val;
-            }
-        }
-        else {
-            for (int y = y1; y <= y0; y++) {
-                int val;
-                if (valid(linex[y]))
-                    val = linex[y];
-                else if (valid(linex_all[y]))
-                    val = linex_all[y];
-                else
-                    continue;
-
-                if (val < xmin[y]) xmin[y] = val;
-                if (val > xmax[y]) xmax[y] = val;
-            }
+            if (val < xmin[y]) xmin[y] = val;
+            if (val > xmax[y]) xmax[y] = val;
         }
     }
 
@@ -266,9 +250,9 @@ bool Renderer::running() {
 
 void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot) {
     // Xiaolin Wu's line algorithm
-    auto ipart  = [](float x) -> int { return std::floor(x); };
+    auto ipart  = [](float x) -> int { return static_cast<int>(x); };
     auto round  = [](float x) -> float { return std::round(x); };
-    auto fpart  = [](float x) -> float { return x - std::floor(x); };
+    auto fpart  = [&](float x) -> float { return x - ipart(x); };
     auto rfpart = [&](float x) -> float { return 1.0f - fpart(x); };
 
     bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);

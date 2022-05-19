@@ -121,11 +121,13 @@ void Renderer::draw_filled_poly(Polyf poly, const Color &color) {
     auto bounds = poly.bounds();
     bounds = Boxf(bounds.min(), bounds.max());
 
-    int xmin[height_];
-    int xmax[height_];
+    const int total_height = height_ + offsety_;
 
-    int linex_all[height_]; // All X points
-    int linex[height_];     // Anti-aliased X points
+    int xmin[total_height];
+    int xmax[total_height];
+
+    int linex_all[total_height]; // All X points
+    int linex[total_height];     // Anti-aliased X points
 
     std::fill_n(xmin, sizeof(xmin)/sizeof(int), INT_MAX);
     std::fill_n(xmax, sizeof(xmax)/sizeof(int), INT_MIN);
@@ -358,7 +360,7 @@ float Renderer::convertx(float x) const {
 }
 
 float Renderer::converty(float y) const {
-    return offsety_ + height_ - (y - map_.offset().y) / map_.size().y * height_;
+    return offsety_ + height_- (y - map_.offset().y) / map_.size().y * height_;
 }
 
 Vec2f Renderer::convert(const Vec2f &p) const {

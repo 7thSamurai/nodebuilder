@@ -91,6 +91,7 @@ int main(int argc, char **argv) {
             }
 
             while (draw) {
+                renderer.draw_map();
                 renderer.show();
 
                 if (!renderer.running())

@@ -2,6 +2,7 @@
 
 #include "vec.hpp"
 #include "common.hpp"
+#include <algorithm>
 
 template <typename T>
 class Line
@@ -37,6 +38,32 @@ public:
 
     int side_of(const Vec2<T> &p) const {
         return Common::sign((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x));
+    }
+
+    /**
+     * Checks if two line segments intersect
+     * @param l The line to check against
+     * @return true if they intersect
+     */
+    bool intersects(const Line<T> &l) const {
+        // Find the bounding box of this line
+        const auto box1[] = {
+            Vec2<T>(std::min(a.x, b.x), std::min(a.y, b.y)),
+            Vec2<T>(std::max(a.x, b.x), std::max(a.y, b.y))
+        };
+
+        // Find the bounding box of the other line
+        const auto box2[] = {
+            Vec2<T>(std::min(l.a.x, l.b.x), std::min(l.a.y, l.b.y)),
+            Vec2<T>(std::max(l.a.x, l.b.x), std::max(l.a.y, l.b.y))
+        };
+
+        // Check if the two bounding boxes intersect
+        if (box1[0].x <= box2[1].x && box1[1].x >= box2[0].x &&
+            box1[0].y <= box2[1].y && box1[1].y >= box2[0].y)
+            return side_of(l.a) != side_of(l.b) && l.side_of(a) != l.side_of(b);
+
+        return false;
     }
 
     Vec2<T> a, b;

@@ -79,12 +79,7 @@ public:
     struct Reject {
     };
 
-    struct BlockMap {
-        std::int16_t x;
-        std::int16_t y;
-        std::uint16_t cols;
-        std::uint16_t rows;
-    };
+    using BlockMap = std::uint16_t;
 
     Map(const std::string &map, Wad &wad);
 
@@ -136,11 +131,11 @@ private:
     	std::size_t num() const {
     		return size / sizeof(T);
     	}
-    
+
     	const T *get() const {
     		return reinterpret_cast<const T*>(data.get());
     	}
-    
+
         void replace(const T *data, std::size_t num) {
             this->changed = true;
             this->size    = num * sizeof(T);

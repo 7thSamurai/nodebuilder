@@ -5,6 +5,7 @@
 #include "map.hpp"
 #include "renderer.hpp"
 #include "bsp.hpp"
+#include "blockmap.hpp"
 
 #define VERSION "0.99"
 
@@ -67,8 +68,18 @@ int main(int argc, char **argv) {
             renderer.draw_map();
             renderer.show();
 
+            // Generate the BSP
             Bsp bsp(map);
             bsp.build(renderer);
+            bsp.save();
+
+            // Generate the Blockmap
+            BlockMap blockmap(map);
+            blockmap.build();
+            blockmap.save();
+
+            // Save all the map realted lumps to the WAD
+            map.save();
 
             if (!renderer.running()) {
                 std::cout << "\nKilled" << std::endl;
@@ -103,6 +114,7 @@ int main(int argc, char **argv) {
             std::cout << "\nAll maps proccessed in " << total_time.count() << " ms" << std::endl;
 
         std::cout << "Saving to WAD..." << std::endl;
+        wad.save("output.wad");
     }
     catch (std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;

@@ -11,8 +11,8 @@ BlockMap::BlockMap(Map &map) : map_(map) {
 
 void BlockMap::build() {
     // Generate the blocks
-    for (auto y = 0; y < map_.size().y; y++) {
-        for (auto x = 0; x < map_.size().x; x++)
+    for (auto y = 0; y < height; y++) {
+        for (auto x = 0; x < width; x++)
             gen(x, y);
     }
 }
@@ -48,6 +48,8 @@ void BlockMap::save() {
             data.push_back(-1); // End of list marker
         }
     }
+
+    map_.replace_blockmap(&data[0], data.size());
 }
 
 void BlockMap::gen(unsigned int x, unsigned int y) {

@@ -128,16 +128,16 @@ int Bsp::process_node(const Node *node) {
     map_node.child[1] = process_node(node->right());
 
     // Left bounding box
-    map_node.lbounds[0] = node->left()->bounds().min().y;
-    map_node.lbounds[1] = node->left()->bounds().max().y;
-    map_node.lbounds[2] = node->left()->bounds().min().x;
-    map_node.lbounds[3] = node->left()->bounds().max().x;
+    map_node.lbounds[0] = node->left()->bounds().max().y; // Top
+    map_node.lbounds[1] = node->left()->bounds().min().y; // Bottom
+    map_node.lbounds[2] = node->left()->bounds().min().x; // Left
+    map_node.lbounds[3] = node->left()->bounds().max().x; // Right
 
     // Right bounding box
-    map_node.rbounds[0] = node->right()->bounds().min().y;
-    map_node.rbounds[1] = node->right()->bounds().max().y;
-    map_node.rbounds[2] = node->right()->bounds().min().x;
-    map_node.rbounds[3] = node->right()->bounds().max().x;
+    map_node.rbounds[0] = node->right()->bounds().max().y; // Top
+    map_node.rbounds[1] = node->right()->bounds().min().y; // Bottom
+    map_node.rbounds[2] = node->right()->bounds().min().x; // Left
+    map_node.rbounds[3] = node->right()->bounds().max().x; // Right
 
     nodes.push_back(map_node);
 

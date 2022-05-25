@@ -47,13 +47,13 @@ public:
      */
     bool intersects(const Line<T> &l) const {
         // Find the bounding box of this line
-        const auto box1[] = {
+        const Vec2<T> box1[] = {
             Vec2<T>(std::min(a.x, b.x), std::min(a.y, b.y)),
             Vec2<T>(std::max(a.x, b.x), std::max(a.y, b.y))
         };
 
         // Find the bounding box of the other line
-        const auto box2[] = {
+        const Vec2<T> box2[] = {
             Vec2<T>(std::min(l.a.x, l.b.x), std::min(l.a.y, l.b.y)),
             Vec2<T>(std::max(l.a.x, l.b.x), std::max(l.a.y, l.b.y))
         };

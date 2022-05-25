@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "-g")
 find_package(SDL2 REQUIRED)
 
 add_executable(nodebuilder
+    src/blockmap.cpp
     src/bsp.cpp
     src/main.cpp
     src/map.cpp

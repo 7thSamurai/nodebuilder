@@ -59,11 +59,13 @@ bool Wad::save(const std::string &new_path) {
     // Write all the lump data
     for (auto &lump : lumps) {
     	// Save the position of the data for later
-        lump.lump.pos = temp.tellp();
+        auto pos = temp.tellp();
 
         // Skip any virtual lumps
-        if (!lump.lump.size)
+        if (!lump.lump.size) {
+            lump.lump.pos = 0;
             continue;
+        }
 
         if (lump.new_data) {
             temp.write(reinterpret_cast<const char*>(lump.new_data.get()), lump.lump.size);
@@ -77,6 +79,8 @@ bool Wad::save(const std::string &new_path) {
             file.read(buffer.get(), lump.lump.size);
             temp.write(buffer.get(), lump.lump.size);
         }
+
+        lump.lump.pos = pos;
     }
 
     header.num_lumps  = lumps.size();

@@ -10,6 +10,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(
     nodebuilder_test
+    common_test.cpp
     vec_test.cpp
     line_test.cpp
 )

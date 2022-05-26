@@ -16,6 +16,7 @@ add_executable(
     box_test.cpp
     polygon_test.cpp
     color_test.cpp
+    seg_test.cpp
 )
 
 target_link_libraries(

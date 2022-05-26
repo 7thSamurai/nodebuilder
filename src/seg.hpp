@@ -23,7 +23,7 @@ public:
     inline unsigned int linedef() const { return linedef_; }
 
     // Binary Angle Measurement
-    std::uint16_t angle() const {
+    std::int16_t angle() const {
         float dx = line_.b.x - line_.a.x;
         float dy = line_.b.y - line_.a.y;
 

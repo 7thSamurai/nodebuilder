@@ -13,6 +13,7 @@ add_executable(
     common_test.cpp
     vec_test.cpp
     line_test.cpp
+    color_test.cpp
 )
 
 target_link_libraries(

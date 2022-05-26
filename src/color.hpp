@@ -11,6 +11,14 @@ public:
     Color(std::uint8_t r0, std::uint8_t g0, std::uint8_t b0) : r(r0), g(g0), b(b0) {
     }
 
+    bool operator == (const Color &c) const {
+        return r == c.r && g == c.g && b == c.b;
+    }
+
+    bool operator != (const Color &c) const {
+        return r != c.r || g != c.g || b != c.b;
+    }
+
     static Color from_rgb(std::uint8_t r, std::uint8_t g, std::uint8_t b) {
         return Color(r, g, b);
     }

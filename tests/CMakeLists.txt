@@ -14,6 +14,7 @@ add_executable(
     vec_test.cpp
     line_test.cpp
     box_test.cpp
+    polygon_test.cpp
     color_test.cpp
 )
 

@@ -2,7 +2,7 @@
 
 #include "map.hpp"
 #include <vector>
-#include <memory>
+#include <map>
 
 class BlockMap
 {
@@ -13,10 +13,11 @@ public:
     void save();
 
 private:
-    using BlockList = std::vector<std::uint16_t>;
+    using List   = std::vector<std::uint16_t>;
+    using Blocks = std::vector<unsigned int>;
 
     const unsigned int header_size = 4;
-    const float block_size  = 128;
+    const float block_size = 128;
 
     // Generate a block
     void gen(unsigned int x, unsigned int y);
@@ -24,5 +25,5 @@ private:
     Map &map_;
     unsigned int width, height;
 
-    std::unique_ptr<BlockList[]> blocks;
+    std::map<List, Blocks> lists;
 };

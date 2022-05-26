@@ -6,8 +6,6 @@
 BlockMap::BlockMap(Map &map) : map_(map) {
     width  = (map_.size().x + block_size - 1) / block_size;
     height = (map_.size().y + block_size - 1) / block_size;
-
-    blocks = std::make_unique<BlockList[]>(width * height);
 }
 
 void BlockMap::build() {
@@ -29,23 +27,19 @@ void BlockMap::save() {
 
     // Make space for the offsets
     data.insert(data.end(), width*height, 0x0000);
-    unsigned int index = header_size;
 
-    // Save the blocks
-    for (auto y = 0; y < height; y++) {
-        for (auto x = 0; x < width; x++) {
-            // Update the offset
-            const auto &block = blocks[y*width + x];
-            data[index++] = Common::little16(data.size());
+    for (auto [list, blocks] : lists) {
+        // Update the offsets
+        for (auto block : blocks)
+            data[header_size + block] = Common::little16(data.size());
 
-            data.push_back(0); // Start of list marker
+        data.push_back(0x0000); // Start of list marker
 
-            // Save the list
-            for (auto i : block)
-                data.push_back(Common::little16(i));
+        // Save the list
+        for (auto line : list)
+            data.push_back(Common::little16(line));
 
-            data.push_back(-1); // End of list marker
-        }
+        data.push_back(0xffff); // End of list marker
     }
 
     map_.replace_blockmap(&data[0], data.size());
@@ -58,10 +52,10 @@ void BlockMap::gen(unsigned int x, unsigned int y) {
         Vec2f(map_.offset().x + x*block_size+block_size, map_.offset().y + y*block_size+block_size)
     );
 
-    auto &block = blocks[y*width + x];
-
     auto vertices = map_.get_vertices();
     auto linedefs = map_.get_linedefs();
+
+    List list;
 
     // Look at each linedef
     for (auto i = 0; i < map_.num_linedefs(); i++, linedefs++) {
@@ -70,6 +64,9 @@ void BlockMap::gen(unsigned int x, unsigned int y) {
 
         // Check if the block contains the linedef
         if (box.contains(Linef(p1, p2)))
-            block.push_back(i);
+            list.push_back(i);
     }
+
+    // Add the list
+    lists[list].push_back(y*width + x);
 }

@@ -1,6 +1,7 @@
 #include "blockmap.hpp"
 #include "box.hpp"
 #include "common.hpp"
+#include "renderer.hpp"
 
 BlockMap::BlockMap(Map &map) : map_(map) {
     width  = (map_.size().x + block_size - 1) / block_size;
@@ -27,21 +28,19 @@ void BlockMap::save() {
     data.push_back(Common::little16(height));
 
     // Make space for the offsets
-    data.insert(data.end(), width*height, 0);
-
-    unsigned int offset = header_size + width*height;
-    unsigned int index = 0;
+    data.insert(data.end(), width*height, 0x0000);
+    unsigned int index = header_size;
 
     // Save the blocks
     for (auto y = 0; y < height; y++) {
         for (auto x = 0; x < width; x++) {
             // Update the offset
             const auto &block = blocks[y*width + x];
-            data[header_size + index++] = Common::little16(offset);
-            offset += block.size() + 2;
+            data[index++] = Common::little16(data.size());
 
             data.push_back(0); // Start of list marker
 
+            // Save the list
             for (auto i : block)
                 data.push_back(Common::little16(i));
 
@@ -55,8 +54,8 @@ void BlockMap::save() {
 void BlockMap::gen(unsigned int x, unsigned int y) {
     // Create a bounding box for this block
     auto box = Boxf(
-        Vec2f(map_.offset().x + x*block_size, map_.offset().x + y*block_size),
-        Vec2f(map_.offset().y + x*block_size+block_size, map_.offset().y + y*block_size+block_size)
+        Vec2f(map_.offset().x + x*block_size, map_.offset().y + y*block_size),
+        Vec2f(map_.offset().x + x*block_size+block_size, map_.offset().y + y*block_size+block_size)
     );
 
     auto &block = blocks[y*width + x];

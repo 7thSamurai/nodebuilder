@@ -16,7 +16,7 @@ private:
     using BlockList = std::vector<std::uint16_t>;
 
     const unsigned int header_size = 4;
-    const unsigned int block_size  = 128;
+    const float block_size  = 128;
 
     // Generate a block
     void gen(unsigned int x, unsigned int y);

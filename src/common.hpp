@@ -10,12 +10,15 @@ inline std::uint16_t swap16(std::uint16_t num) {
 }
 
 inline std::uint32_t swap32(std::uint32_t num) {
-    return (num >> 24) | (num >> 8) | (num << 8) | (num << 24);
+    return ((num & 0xFF000000) >> 24) |
+           ((num & 0x00FF0000) >> 8)  |
+           ((num & 0x0000FF00) << 8)  |
+           ((num & 0x000000FF) << 24);
 }
 
 inline std::uint16_t little16(std::uint16_t num) {
 #if BYTE_ORDER == BIG_ENDIAN
-    return (num >> 8) | (num << 8);
+    return swap16(num);
 #else
     return num;
 #endif
@@ -23,7 +26,7 @@ inline std::uint16_t little16(std::uint16_t num) {
 
 inline std::uint32_t little32(std::uint32_t num) {
 #if BYTE_ORDER == BIG_ENDIAN
-    return (num >> 24) | (num >> 8) | (num << 8) | (num << 24);
+    return swap32(num);
 #else
     return num;
 #endif

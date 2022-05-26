@@ -11,6 +11,14 @@ public:
     Box(const Vec2<T> &min, const Vec2<T> &max) : min_(min), max_(max) {
     }
 
+    bool operator == (const Box &b) const {
+        return min_ == b.min_ && max_ == b.max_;
+    }
+
+    bool operator != (const Box &b) const {
+        return min_ != b.min_ || max_ != b.max_;
+    }
+
     /**
      * Extends the bounding-box so that a point fits inside
      * @param p The point to fit inside
@@ -32,7 +40,7 @@ public:
      * @param p The point to check
      * @return true if contained
      */
-    bool contains(const Vec2<T> &p) {
+    bool contains(const Vec2<T> &p) const {
         if (p.x < min_.x || p.x > max_.x) return false;
         if (p.y < min_.y || p.y > max_.y) return false;
 
@@ -44,7 +52,7 @@ public:
      * @param l The line to check
      * @return true if contained
      */
-    bool contains(const Line<T> &l) {
+    bool contains(const Line<T> &l) const {
         // First check if one of the points is contained
         if (contains(l.a) || contains(l.b))
             return true;

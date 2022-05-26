@@ -84,7 +84,7 @@ void Renderer::draw_box(const Boxf &box) {
         return;
 
     auto pos  = convert(box.min());
-    auto size = convert(Vec2f(map_.offset().x, map_.offset().y) + box.max() - box.min());
+    auto size = convert(box.max()) - convert(box.min());
 
     SDL_Rect rect = {
         static_cast<int>(pos.x),

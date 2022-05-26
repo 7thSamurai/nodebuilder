@@ -41,3 +41,42 @@ TEST(LineTest, Math) {
     EXPECT_EQ(l.run(), 4.0f);
     EXPECT_EQ(l.slope(), 2.0f);
 }
+
+TEST(LineTest, Intersects) {
+    const Linef horiz(Vec2f(-10.0f, 0.0f), Vec2f(10.0f, 0.0f)); // Horizontal
+    const Linef vert(Vec2f(0.0f, -10.0f), Vec2f(0.0f, 10.0f));  // Vertical
+    const Linef up(Vec2f(-5.0f, -5.0f), Vec2f(5.0f, 5.0f));     // Slopes up
+    const Linef down(Vec2f(-5.0f, 5.0f), Vec2f(5.0f, -5.0f));   // Slopes down
+
+    EXPECT_EQ(horiz.intersects(vert), true);
+    EXPECT_EQ(horiz.intersects(up), true);
+    EXPECT_EQ(horiz.intersects(down), true);
+
+    EXPECT_EQ(vert.intersects(horiz), true);
+    EXPECT_EQ(vert.intersects(up), true);
+    EXPECT_EQ(vert.intersects(down), true);
+
+    EXPECT_EQ(up.intersects(horiz), true);
+    EXPECT_EQ(up.intersects(vert), true);
+    EXPECT_EQ(up.intersects(down), true);
+
+    EXPECT_EQ(down.intersects(horiz), true);
+    EXPECT_EQ(down.intersects(vert), true);
+    EXPECT_EQ(down.intersects(up), true);
+
+    EXPECT_EQ(vert.intersects(vert + Vec2f(-1.0f, 0.0f)), false);
+    EXPECT_EQ(vert.intersects(vert + Vec2f(1.0f, 0.0f)), false);
+    EXPECT_EQ(vert.intersects(up + Vec2f(-20.0f, 0.0f)), false);
+    EXPECT_EQ(vert.intersects(up + Vec2f(20.0f, 0.0f)), false);
+
+    EXPECT_EQ(horiz.intersects(horiz + Vec2f(0.0f, -1.0f)), false);
+    EXPECT_EQ(horiz.intersects(horiz + Vec2f(0.0f, 1.0f)), false);
+    EXPECT_EQ(horiz.intersects(up + Vec2f(-20.0f, 0.0f)), false);
+    EXPECT_EQ(horiz.intersects(up + Vec2f(20.0f, 0.0f)), false);
+
+    EXPECT_EQ(up.intersects(up + Vec2f(-1.0f, 0.0f)), false);
+    EXPECT_EQ(up.intersects(up + Vec2f(1.0f, 0.0f)), false);
+
+    EXPECT_EQ(down.intersects(down + Vec2f(-1.0f, 0.0f)), false);
+    EXPECT_EQ(down.intersects(down + Vec2f(1.0f, 0.0f)), false);
+}

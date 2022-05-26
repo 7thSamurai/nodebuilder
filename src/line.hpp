@@ -24,6 +24,14 @@ public:
         return a != l.a || b != l.b;
     }
 
+    Line operator + (const Vec2<T> &v) const {
+        return Line(a + v, b + v);
+    }
+
+    Line operator - (const Vec2<T> &v) const {
+        return Line(a - v, b - v);
+    }
+
     T rise() const {
         return b.y - a.y;
     }

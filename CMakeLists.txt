@@ -9,5 +9,6 @@ set(CMAKE_CXX_FLAGS "-g")
 
 enable_testing()
 
+include_directories(src)
 add_subdirectory(src)
 add_subdirectory(tests)

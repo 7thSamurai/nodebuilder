@@ -10,7 +10,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(
     nodebuilder_test
-    # Add tests here
+    vec_test.cpp
 )
 
 target_link_libraries(

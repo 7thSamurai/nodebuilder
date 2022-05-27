@@ -81,6 +81,34 @@ public:
         return false;
     }
 
+    /**
+     * Clips a line so it fits inside
+     * @param l The line to clip
+     */
+    Line<T> clip(Line<T> l) const {
+        auto cut = [](const Line<T> &l1, const Line<T> &l2) {
+            auto p   = l1.intersect_at(l2);
+            int side = l1.side_of(l2.a);
+
+            if (side == 1)
+                return Line(l2.a, p);
+
+            return Line(l2.b, p);
+        };
+
+        auto top   = Line<T>(top_left (), top_right());
+        auto bot   = Line<T>(bot_right(), bot_left ());
+        auto left  = Line<T>(bot_left (), top_left());
+        auto right = Line<T>(top_right(), bot_right());
+
+        if (l.intersects(top))   l = cut(top, l);
+        if (l.intersects(bot))   l = cut(bot, l);
+        if (l.intersects(left))  l = cut(left, l);
+        if (l.intersects(right)) l = cut(right, l);
+
+        return l;
+    }
+
     Vec2<T> min() const { return min_; }
     Vec2<T> max() const { return max_; }
 

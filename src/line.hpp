@@ -18,6 +18,7 @@
 #include "vec.hpp"
 #include "common.hpp"
 #include <algorithm>
+#include <iostream>
 
 template <typename T>
 class Line
@@ -87,6 +88,34 @@ public:
             return side_of(l.a) != side_of(l.b) && l.side_of(a) != l.side_of(b);
 
         return false;
+    }
+
+    /**
+     * Finds the exact point of intersection of this line segment and another line segment (This assumes that it does intersect)
+     * @param l The line to check against
+     * @return The point of intersection
+     */
+    Vec2<T> intersect_at(const Line<T> &l) const {
+        // Derived from "y - y1 = m(x - x1)"
+        T a1 = b.y - a.y;
+        T b1 = a.x - b.x;
+        T c1 = a1 * a.x + b1 * a.y;
+
+        T a2 = l.b.y - l.a.y;
+        T b2 = l.a.x - l.b.x;
+        T c2 = a2 * l.a.x + b2 * l.a.y;
+
+        float det = a1 * b2 - a2 * b1;
+
+        if (det == 0) {
+            std::cerr << "Error lines are parallel" << std::endl;
+            return Vec2<T>(0, 0);
+        }
+
+        T x = (b2 * c1 - b1 * c2) / det;
+        T y = (a1 * c2 - a2 * c1) / det;
+
+        return Vec2<T>(x, y);
     }
 
     Vec2<T> a, b;

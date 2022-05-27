@@ -94,4 +94,36 @@ TEST(LineTest, Intersects) {
 
     EXPECT_EQ(down.intersects(down + Vec2f(-1.0f, 0.0f)), false);
     EXPECT_EQ(down.intersects(down + Vec2f(1.0f, 0.0f)), false);
+
+    EXPECT_EQ(horiz.intersects(vert + Vec2f(-10.0f, 0.0f)), true);
+    EXPECT_EQ(horiz.intersects(vert + Vec2f(-11.0f, 0.0f)), false);
+
+    EXPECT_EQ(vert.intersects(horiz + Vec2f(0.0f, -10.0f)), true);
+    EXPECT_EQ(vert.intersects(horiz + Vec2f(0.0f, -11.0f)), false);
+}
+
+TEST(LineTest, IntersectAt) {
+    const Linef horiz(Vec2f(-10.0f, 0.0f), Vec2f(10.0f, 0.0f)); // Horizontal
+    const Linef vert(Vec2f(0.0f, -10.0f), Vec2f(0.0f, 10.0f));  // Vertical
+    const Linef up(Vec2f(-5.0f, -5.0f), Vec2f(5.0f, 5.0f));     // Slopes up
+    const Linef down(Vec2f(-5.0f, 5.0f), Vec2f(5.0f, -5.0f));   // Slopes down
+
+    EXPECT_EQ(horiz.intersect_at(vert), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(horiz.intersect_at(up), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(horiz.intersect_at(down), Vec2f(0.0f, 0.0f));
+
+    EXPECT_EQ(vert.intersect_at(horiz), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(vert.intersect_at(up), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(vert.intersect_at(down), Vec2f(0.0f, 0.0f));
+
+    EXPECT_EQ(up.intersect_at(horiz), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(up.intersect_at(vert), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(up.intersect_at(down), Vec2f(0.0f, 0.0f));
+
+    EXPECT_EQ(down.intersect_at(horiz), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(down.intersect_at(vert), Vec2f(0.0f, 0.0f));
+    EXPECT_EQ(down.intersect_at(up), Vec2f(0.0f, 0.0f));
+
+    EXPECT_EQ(horiz.intersect_at(vert + Vec2f(-10.0f, 0.0f)), Vec2f(-10.0f, 0.0f));
+    EXPECT_EQ(vert.intersect_at(horiz + Vec2f(0.0f, -10.0f)), Vec2f(0.0f, -10.0f));
 }

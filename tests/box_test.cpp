@@ -65,17 +65,16 @@ TEST(BoxTest, ContainsPoint) {
 TEST(BoxTest, ClipLine) {
     const Boxf b(Vec2f(-1.0f, -2.0f), Vec2f(3.0f, 4.0f));
 
-    auto l = b.clip(Linef(Vec2f(-2.0f, 5.5f), Vec2f(4.0, -3.5f)));
-
-    std::cout << l.a.x << "," << l.a.y << "    " << l.b.x << "," << l.b.y << std::endl;
-
     EXPECT_EQ(b.clip(Linef(Vec2f(1.0f, -10.0f), Vec2f(1.0f, 10.0f))), Linef(Vec2f(1.0f, -2.0f), Vec2f(1.0f, 4.0f))); // Vertical
     EXPECT_EQ(b.clip(Linef(Vec2f(-10.0f, 1.0f), Vec2f(10.0f, 1.0f))), Linef(Vec2f(-1.0f, 1.0f), Vec2f(3.0f, 1.0f))); // Horizontal
     EXPECT_EQ(b.clip(Linef(Vec2f(-2.0f, -3.5f), Vec2f(4.0f, 5.5f))), Linef(Vec2f(-1.0f, -2.0f), Vec2f(3.0f, 4.0f))); // Slopes down
-    EXPECT_EQ(b.clip(Linef(Vec2f(-2.0f, 5.5f), Vec2f(4.0, -3.5f))), Linef(Vec2f(-1.0f, 4.0f), Vec2f(3.0, -2.0f))); // Slopes up
+    EXPECT_EQ(b.clip(Linef(Vec2f(-2.0f, 5.5f), Vec2f(4.0, -3.5f))), Linef(Vec2f(-1.0f, 4.0f), Vec2f(3.0, -2.0f)));   // Slopes up
 
-    //EXPECT_EQ(b.clip(Linef(Vec2f(, ), Vec2f(, ))), Linef(Vec2f(, ), Vec2f(, )));
-    //EXPECT_EQ(b.clip(Linef(Vec2f(, ), Vec2f(, ))), Linef(Vec2f(, ), Vec2f(, )));
+    // Same as above, but reversed order of points
+    EXPECT_EQ(b.clip(Linef(Vec2f(1.0f, 10.0f), Vec2f(1.0f, -10.0f))), Linef(Vec2f(1.0f, -2.0f), Vec2f(1.0f, 4.0f))); // Vertical
+    EXPECT_EQ(b.clip(Linef(Vec2f(10.0f, 1.0f), Vec2f(-10.0f, 1.0f))), Linef(Vec2f(-1.0f, 1.0f), Vec2f(3.0f, 1.0f))); // Horizontal
+    EXPECT_EQ(b.clip(Linef(Vec2f(4.0f, 5.5f), Vec2f(-2.0f, -3.5f))), Linef(Vec2f(-1.0f, -2.0f), Vec2f(3.0f, 4.0f))); // Slopes down
+    EXPECT_EQ(b.clip(Linef(Vec2f(4.0, -3.5f), Vec2f(-2.0f, 5.5f))), Linef(Vec2f(-1.0f, 4.0f), Vec2f(3.0, -2.0f)));   // Slopes up
 }
 
 TEST(BoxTest, Corners) {

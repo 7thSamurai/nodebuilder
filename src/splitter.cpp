@@ -59,14 +59,14 @@ std::pair<Seg, Seg> Splitter::cut(const Seg &seg) const {
     Vec2f p  = intersect_at(seg);
     int side = side_of(seg.p1());
 
+    float offset = std::sqrt(std::pow(p.x - seg.p1().x, 2) + std::pow(p.y - seg.p1().y, 2));
+
     if (side == -1) {
-        float offset = std::sqrt(std::pow(p.x - seg.p1().x, 2) + std::pow(p.y - seg.p1().y, 2));
         l1 = Seg(seg.p1(), p, seg.side(), seg.offset(), seg.linedef());
         l2 = Seg(p, seg.p2(), seg.side(), seg.offset()+offset, seg.linedef());
     }
 
     else {
-        float offset = std::sqrt(std::pow(p.x - seg.p2().x, 2) + std::pow(p.y - seg.p2().y, 2));
         l1 = Seg(p, seg.p2(), seg.side(), seg.offset()+offset, seg.linedef());
         l2 = Seg(seg.p1(), p, seg.side(), seg.offset(), seg.linedef());
     }

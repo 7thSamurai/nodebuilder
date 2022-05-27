@@ -110,13 +110,15 @@ void BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
     lists[list].push_back(y*width + x);
 
     if (renderer.drawing()) {
+        const auto color = Color::random();
+
         // Draw the lines that are inside the box
         for (const auto &i : list) {
             auto p1 = Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y);
             auto p2 = Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y);
 
             auto line = box.clip(Linef(p1, p2));
-            renderer.add_line(line, Color::random());
+            renderer.add_line(line, color);
         }
 
         renderer.draw_box(box);

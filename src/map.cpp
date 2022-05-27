@@ -228,11 +228,8 @@ void Map::swap_byte_order() {
     }
 
     auto blockmap = reinterpret_cast<BlockMap*>(blockmap_.data.get());
-    for (auto i = 0; i < num_blockmap(); i++, blockmap++) {
-        blockmap->x    = Common::swap16(blockmap->x);
-        blockmap->y    = Common::swap16(blockmap->y);
-        blockmap->cols = Common::swap16(blockmap->cols);
-        blockmap->rows = Common::swap16(blockmap->rows);
+    for (auto i = 0; i < num_blockmap(); i++) {
+        blockmap[i] = Common::swap16(blockmap[i]);
     }
 #endif
 }

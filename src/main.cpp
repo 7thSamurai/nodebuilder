@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 
             // Generate the Blockmap
             BlockMap blockmap(map);
-            blockmap.build();
+            blockmap.build(renderer);
             blockmap.save();
 
             // Save all the map realted lumps to the WAD
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
             }
 
             while (draw) {
-                renderer.draw_map();
+                renderer.draw_map_outline();
                 renderer.show();
 
                 if (!renderer.running())

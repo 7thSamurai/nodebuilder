@@ -23,11 +23,35 @@ BlockMap::BlockMap(Map &map) : map_(map) {
     height = (map_.size().y + block_size - 1) / block_size;
 }
 
-void BlockMap::build() {
+void BlockMap::build(Renderer &renderer) {
+    // Draw a grid representing the block map
+    auto draw_grid = [&]() {
+        renderer.draw_map_outline();
+
+        const Color color(0x10, 0x10, 0x10);
+
+        // Draw the horizontal lines
+        Vec2f pos(map_.offset().x, map_.offset().y);
+        for (auto y = 0; y <= height; y++) {
+            renderer.draw_line(Linef(pos, pos + Vec2f(map_.size().x, 0.0f)), color);
+            pos.y += block_size;
+        }
+
+        // Draw the vertical lines
+        pos = Vec2f(map_.offset().x, map_.offset().y);
+        for (auto x = 0; x <= width; x++) {
+            renderer.draw_line(Linef(pos, pos + Vec2f(0.0f, map_.size().y)), color);
+            pos.x += block_size;
+        }
+    };
+
     // Generate the blocks
-    for (auto y = 0; y < height; y++) {
-        for (auto x = 0; x < width; x++)
-            gen(x, y);
+    for (int y = height-1; y >= 0; y--) {
+        for (int x = 0; x < width; x++) {
+            draw_grid();
+            gen(x, y, renderer);
+            renderer.show();
+        }
     }
 }
 
@@ -60,7 +84,7 @@ void BlockMap::save() {
     map_.replace_blockmap(&data[0], data.size());
 }
 
-void BlockMap::gen(unsigned int x, unsigned int y) {
+void BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
     // Create a bounding box for this block
     auto box = Boxf(
         Vec2f(map_.offset().x + x*block_size, map_.offset().y + y*block_size),
@@ -73,9 +97,9 @@ void BlockMap::gen(unsigned int x, unsigned int y) {
     List list;
 
     // Look at each linedef
-    for (auto i = 0; i < map_.num_linedefs(); i++, linedefs++) {
-        auto p1 = Vec2f(vertices[linedefs->start].x, vertices[linedefs->start].y);
-        auto p2 = Vec2f(vertices[linedefs->end].x, vertices[linedefs->end].y);
+    for (auto i = 0; i < map_.num_linedefs(); i++) {
+        auto p1 = Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y);
+        auto p2 = Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y);
 
         // Check if the block contains the linedef
         if (box.contains(Linef(p1, p2)))
@@ -84,4 +108,17 @@ void BlockMap::gen(unsigned int x, unsigned int y) {
 
     // Add the list
     lists[list].push_back(y*width + x);
+
+    if (renderer.drawing()) {
+        // Draw the lines that are inside the box
+        for (const auto &i : list) {
+            auto p1 = Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y);
+            auto p2 = Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y);
+
+            auto line = box.clip(Linef(p1, p2));
+            renderer.add_line(line, Color::random());
+        }
+
+        renderer.draw_box(box);
+    }
 }

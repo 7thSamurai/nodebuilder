@@ -58,6 +58,25 @@ void Renderer::draw_map() {
     if (!drawing())
         return;
 
+    draw_map_outline();
+
+    for (const auto& [poly, color] : polys)
+        draw_filled_poly(poly, color);
+
+    for (const auto& [poly, color] : polys) {
+        for (auto i = 0; i < poly.size(); i++) {
+            auto p1 = convert(poly.at(i+0));
+            auto p2 = convert(poly.at(i+1));
+
+            draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
+        }
+    }
+}
+
+void Renderer::draw_map_outline() {
+    if (!drawing())
+        return;
+
     auto linedefs = map_.get_linedefs();
     auto vertices = map_.get_vertices();
 
@@ -71,16 +90,11 @@ void Renderer::draw_map() {
         draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
     }
 
-    for (const auto &pair : polys)
-        draw_filled_poly(pair.first, pair.second);
+    for (const auto& [line, color] : lines) {
+        auto p1 = convert(line.a);
+        auto p2 = convert(line.b);
 
-    for (const auto &pair : polys) {
-        for (auto i = 0; i < pair.first.size(); i++) {
-            auto p1 = convert(pair.first.at(i+0));
-            auto p2 = convert(pair.first.at(i+1));
-
-            draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
-        }
+        draw_line(p1.x, p1.y, p2.x, p2.y, color);
     }
 }
 
@@ -92,6 +106,17 @@ void Renderer::draw_line(const Linef &line) {
     auto p2 = convert(line.b);
 
     draw_line(p1.x, p1.y, p2.x, p2.y, Color(0xff, 0xff, 0xff));
+}
+
+void Renderer::draw_line(const Linef &line, const Color &color) {
+    if (!drawing())
+        return;
+
+    auto p1 = convert(line.a);
+    auto p2 = convert(line.b);
+
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 0xff);
+    SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
 }
 
 void Renderer::draw_box(const Boxf &box) {
@@ -244,6 +269,13 @@ void Renderer::add_poly(const Polyf &poly, const Color &color) {
     polys.push_back(std::make_pair(poly, color));
 }
 
+void Renderer::add_line(const Linef &line, const Color &color) {
+    if (!drawing())
+        return;
+
+    lines.push_back(std::make_pair(line, color));
+}
+
 void Renderer::show() {
     if (!drawing())
         return;
@@ -269,6 +301,10 @@ bool Renderer::running() {
     }
 
     return running_;
+}
+
+bool Renderer::drawing() const {
+    return window && renderer;
 }
 
 void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot) {
@@ -383,8 +419,4 @@ Vec2f Renderer::convert(const Vec2f &p) const {
         convertx(p.x),
         converty(p.y)
     );
-}
-
-bool Renderer::drawing() const {
-    return window && renderer;
 }

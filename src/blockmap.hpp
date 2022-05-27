@@ -19,12 +19,14 @@
 #include <vector>
 #include <map>
 
+class Renderer;
+
 class BlockMap
 {
 public:
     BlockMap(Map &map);
 
-    void build();
+    void build(Renderer &renderer);
     void save();
 
 private:
@@ -35,7 +37,7 @@ private:
     const float block_size = 128;
 
     // Generate a block
-    void gen(unsigned int x, unsigned int y);
+    void gen(unsigned int x, unsigned int y, Renderer &renderer);
 
     Map &map_;
     unsigned int width, height;

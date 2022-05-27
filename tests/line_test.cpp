@@ -57,6 +57,27 @@ TEST(LineTest, Math) {
     EXPECT_EQ(l.slope(), 2.0f);
 }
 
+TEST(LineTest, SideOf) {
+    const Linef horiz(Vec2f(-10.0f, 0.0f), Vec2f(10.0f, 0.0f)); // Horizontal
+    const Linef vert(Vec2f(0.0f, -10.0f), Vec2f(0.0f, 10.0f));  // Vertical
+    const Linef up(Vec2f(-5.0f, -5.0f), Vec2f(5.0f, 5.0f));     // Slopes up
+    const Linef down(Vec2f(-5.0f, 5.0f), Vec2f(5.0f, -5.0f));   // Slopes down
+
+    EXPECT_EQ(horiz.side_of(Vec2f(0.0f, -10.0f)), -1);
+    EXPECT_EQ(horiz.side_of(Vec2f(0.0f, 10.0f)), 1);
+    EXPECT_EQ(horiz.side_of(Vec2f(3.0f, 0.0f)), 0);
+
+    EXPECT_EQ(vert.side_of(Vec2f(-10.0f, 0.0f)), 1);
+    EXPECT_EQ(vert.side_of(Vec2f(10.0f, 0.0f)), -1);
+    EXPECT_EQ(vert.side_of(Vec2f(0.0f, -4.0f)), 0);
+
+    EXPECT_EQ(up.side_of(Vec2f(-10.0f, 0.0f)), 1);
+    EXPECT_EQ(up.side_of(Vec2f(10.0f, 0.0f)), -1);
+
+    EXPECT_EQ(down.side_of(Vec2f(-10.0f, 0.0f)), -1);
+    EXPECT_EQ(down.side_of(Vec2f(10.0f, 0.0f)), 1);
+}
+
 TEST(LineTest, Intersects) {
     const Linef horiz(Vec2f(-10.0f, 0.0f), Vec2f(10.0f, 0.0f)); // Horizontal
     const Linef vert(Vec2f(0.0f, -10.0f), Vec2f(0.0f, 10.0f));  // Vertical

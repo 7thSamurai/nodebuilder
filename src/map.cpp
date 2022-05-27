@@ -87,19 +87,23 @@ bool Map::valid() const {
     auto linedefs = get_linedefs();
     for (auto i = 0; i < num_linedefs(); i++, linedefs++) {
         if (linedefs->start >= num_vertices()) {
+            std::cerr << "Error: Nonexistent vertex #" << linedefs->start << " used in linedef #" << i << std::endl;
             valid = false;
         }
         if (linedefs->end >= num_vertices()) {
+            std::cerr << "Error: Nonexistent vertex #" << linedefs->end << " used in linedef #" << i << std::endl;
             valid = false;
         }
 
-        if (linedefs->sidedef[0] != -1) {
+        if (linedefs->sidedef[0] != 0xffff) {
             if (linedefs->sidedef[0] >= num_sidedefs()) {
+                std::cerr << "Error: Nonexistent sidedef #" << linedefs->sidedef[0] << " used in linedef #" << i << std::endl;
                 valid = false;
             }
         }
-        if (linedefs->sidedef[1] != -1) {
+        if (linedefs->sidedef[1] != 0xffff) {
             if (linedefs->sidedef[1] >= num_sidedefs()) {
+                std::cerr << "Error: Nonexistent sidedef #" << linedefs->sidedef[1] << " used in linedef #" << i << std::endl;
                 valid = false;
             }
         }
@@ -109,6 +113,7 @@ bool Map::valid() const {
     auto sidedefs = get_sidedefs();
     for (auto i = 0; i < num_sidedefs(); i++, sidedefs++) {
         if (sidedefs->sector >= num_sectors()) {
+            std::cerr << "Error: Nonexistent sector #" << sidedefs->sector << " used in sidedef #" << i << std::endl;
             valid = false;
         }
     }

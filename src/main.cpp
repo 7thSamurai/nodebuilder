@@ -75,6 +75,11 @@ int main(int argc, char **argv) {
                 return 1;
             }
 
+            if (!map.valid()) {
+                std::cerr << "\nMap " << name << " contains errors!" << std::endl;
+                return 1;
+            }
+
             std::string title;
             if (draw)
                 title = "Node Builder - " + name;

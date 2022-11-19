@@ -24,8 +24,8 @@
 #include "splitter.hpp"
 #include "color.hpp"
 
-struct SDL_Window;
-struct SDL_Renderer;
+#include "SDL2/SDL.h"
+#include "cairo.h"
 
 class Map;
 
@@ -61,8 +61,14 @@ private:
     float converty(float y) const;
     Vec2f convert(const Vec2f &p) const;
 
+    // SDL stuff
     SDL_Window *window;
     SDL_Renderer *renderer;
+    SDL_Texture *texture;
+
+    // Cairo stuff
+    cairo_t *cairo_context;
+    cairo_surface_t *cairo_surface;
 
     Map &map_;
     unsigned int width_, height_;

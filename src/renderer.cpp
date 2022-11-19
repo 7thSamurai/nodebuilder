@@ -15,7 +15,7 @@
 
 #include "renderer.hpp"
 #include "map.hpp"
-#include "SDL2/SDL.h"
+
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
@@ -28,24 +28,46 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
         return;
     }
 
+    // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         throw std::runtime_error("Error initializing SDL");
 
+    // Create a window
     window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
     if (!window)
         throw std::runtime_error("Error creating SDL window");
 
+    // Setup the renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
         throw std::runtime_error("Error creating SDL renderer");
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+    // Create the SDL texture
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+    if (!texture)
+        throw std::runtime_error("Error creating SDL texture");
+
+    // Setup the Cairo context
+    cairo_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cairo_context = cairo_create(cairo_surface);
+
     // Fix the aspect ratio
     calc_aspect(width, height);
+
+    // Setup the transformation matrix
+    // TODO
 }
 
 Renderer::~Renderer() {
+    // Clean up Cairo
+    if (cairo_context)
+        cairo_destroy(cairo_context);
+    if (cairo_surface)
+        cairo_surface_destroy(cairo_surface);
+
+    // Clean up SDL
     if (renderer)
         SDL_DestroyRenderer(renderer);
     if (window)

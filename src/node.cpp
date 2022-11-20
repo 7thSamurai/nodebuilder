@@ -41,6 +41,7 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
         bounds_.extend(seg.p2());
     }
 
+    renderer.clear();
     renderer.draw_map();
 
     for (const auto &seg : segs)

@@ -25,6 +25,10 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
     if (name.empty()) {
         window   = nullptr;
         renderer = nullptr;
+
+        cairo_context = nullptr;
+        cairo_surface = nullptr;
+
         return;
     }
 
@@ -52,12 +56,21 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
     // Setup the Cairo context
     cairo_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_context = cairo_create(cairo_surface);
+    cairo_set_antialias(cairo_context, CAIRO_ANTIALIAS_BEST);
+    cairo_set_line_join(cairo_context, CAIRO_LINE_JOIN_BEVEL);
 
     // Fix the aspect ratio
-    calc_aspect(width, height);
+    //calc_aspect(width, height);
 
-    // Setup the transformation matrix
-    // TODO
+    // Flip the Y direction
+    cairo_matrix_t flip_y;
+    cairo_matrix_init(&flip_y, 1, 0, 0, -1, 0, 0);
+    cairo_set_matrix(cairo_context, &flip_y);
+    cairo_translate(cairo_context, 0, -height);
+
+    // Translate and scale the matrix according to the map size
+    cairo_scale(cairo_context, static_cast<float>(width) / map.size().x, static_cast<float>(height) / map.size().y);
+    cairo_translate(cairo_context, -map.offset().x, -map.offset().y);
 }
 
 Renderer::~Renderer() {
@@ -80,19 +93,12 @@ void Renderer::draw_map() {
     if (!drawing())
         return;
 
+    // Draw the outline
     draw_map_outline();
 
+    // Then any polygons
     for (const auto& [poly, color] : polys)
         draw_filled_poly(poly, color);
-
-    for (const auto& [poly, color] : polys) {
-        for (auto i = 0; i < poly.size(); i++) {
-            auto p1 = convert(poly.at(i+0));
-            auto p2 = convert(poly.at(i+1));
-
-            draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
-        }
-    }
 }
 
 void Renderer::draw_map_outline() {
@@ -102,173 +108,124 @@ void Renderer::draw_map_outline() {
     auto linedefs = map_.get_linedefs();
     auto vertices = map_.get_vertices();
 
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
-    SDL_RenderClear(renderer);
-
     for (auto i = 0; i < map_.num_linedefs(); i++) {
-        auto p1 = convert(Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y));
-        auto p2 = convert(Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y));
+        auto p1 = Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y);
+        auto p2 = Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y);
 
-        draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x3d, 0x3d, 0x3d));
+        cairo_save(cairo_context);
+
+        cairo_move_to(cairo_context, p1.x, p1.y);
+        cairo_line_to(cairo_context, p2.x, p2.y);
+
+        cairo_set_source_rgb(cairo_context, 0.24, 0.24, 0.24);
+        cairo_identity_matrix(cairo_context);
+        cairo_set_line_width(cairo_context, 2);
+        cairo_stroke(cairo_context);
+
+        cairo_restore(cairo_context);
     }
 
-    for (const auto& [line, color] : lines) {
-        auto p1 = convert(line.a);
-        auto p2 = convert(line.b);
-
-        draw_line(p1.x, p1.y, p2.x, p2.y, color);
-    }
+    for (const auto& [line, color] : lines)
+        draw_line(line, color);
 }
 
 void Renderer::draw_line(const Linef &line) {
     if (!drawing())
         return;
 
-    auto p1 = convert(line.a);
-    auto p2 = convert(line.b);
+    cairo_save(cairo_context);
 
-    draw_line(p1.x, p1.y, p2.x, p2.y, Color(0xff, 0xff, 0xff));
+    // Draw the line
+    cairo_set_source_rgb(cairo_context, 1.0, 1.0, 1.0);
+    cairo_move_to(cairo_context, line.a.x, line.a.y);
+    cairo_line_to(cairo_context, line.b.x, line.b.y);
+
+    cairo_identity_matrix(cairo_context);
+    cairo_set_line_width(cairo_context, 2);
+    cairo_stroke(cairo_context);
+
+    cairo_restore(cairo_context);
 }
 
 void Renderer::draw_line(const Linef &line, const Color &color) {
     if (!drawing())
         return;
 
-    auto p1 = convert(line.a);
-    auto p2 = convert(line.b);
+    cairo_save(cairo_context);
 
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 0xff);
-    SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
+    // Draw the line with the desired color
+    cairo_set_source_rgb(cairo_context, color.r/255.0f, color.g/255.0f, color.b/255.0f);
+    cairo_move_to(cairo_context, line.a.x, line.a.y);
+    cairo_line_to(cairo_context, line.b.x, line.b.y);
+
+    cairo_identity_matrix(cairo_context);
+    cairo_set_line_width(cairo_context, 2);
+    cairo_stroke(cairo_context);
+
+    cairo_restore(cairo_context);
 }
 
 void Renderer::draw_box(const Boxf &box) {
     if (!drawing())
         return;
 
-    auto pos  = convert(box.min());
-    auto size = convert(box.max()) - convert(box.min());
+    cairo_save(cairo_context);
 
-    SDL_Rect rect = {
-        static_cast<int>(pos.x),
-        static_cast<int>(pos.y),
-        static_cast<int>(size.x),
-        static_cast<int>(size.y)
-    };
+    // Draw the rect
+    cairo_set_source_rgb(cairo_context, 0.5, 0.0, 0.5);
+    cairo_rectangle(cairo_context, box.min().x, box.min().y, box.width(), box.height());
 
-    SDL_SetRenderDrawColor(renderer, 0x80, 0x00, 0x80, 0xff);
-    SDL_RenderDrawRect(renderer, &rect);
+    cairo_identity_matrix(cairo_context);
+    cairo_set_line_width(cairo_context, 2);
+    cairo_stroke(cairo_context);
+    cairo_restore(cairo_context);
 }
 
 void Renderer::draw_poly(const Polyf &poly) {
     if (!drawing())
         return;
 
-    for (auto i = 0; i < poly.size(); i++) {
-        auto p1 = convert(poly.at(i+0));
-        auto p2 = convert(poly.at(i+1));
-        draw_line(p1.x, p1.y, p2.x, p2.y, Color(0x80, 0x00, 0x80));
-    }
+    // Start vertex
+    cairo_save(cairo_context);
+    cairo_move_to(cairo_context, poly.at(0).x, poly.at(0).y);
+
+    // Draw the lines
+    for (auto i = 1; i <= poly.size(); i++)
+        cairo_line_to(cairo_context, poly.at(i).x, poly.at(i).y);
+
+    cairo_identity_matrix(cairo_context);
+    cairo_set_line_width(cairo_context, 2);
+    cairo_stroke(cairo_context);
+    cairo_restore(cairo_context);
 }
 
-// Warning: Extremelly hacky code (I am not really sure on the best way to do this, so I tossed this together real quick...)
 void Renderer::draw_filled_poly(Polyf poly, const Color &color) {
     if (!drawing())
         return;
 
-    // Convert all the points to screen space
-    for (auto i = 0; i < poly.size(); i++)
-        poly[i] = convert(poly[i]);
+    // Start vertex
+    cairo_save(cairo_context);
+    cairo_move_to(cairo_context, poly.at(0).x, poly.at(0).y);
 
-    // Find the bounds of the polygon and convert them to screen space
-    auto bounds = poly.bounds();
-    bounds = Boxf(bounds.min(), bounds.max());
+    // Draw the lines
+    for (auto i = 1; i <= poly.size(); i++)
+        cairo_line_to(cairo_context, poly.at(i).x, poly.at(i).y);
 
-    const int total_height = height_ + offsety_;
+    // Draw the outline
+    cairo_identity_matrix(cairo_context);
+    cairo_set_line_width(cairo_context, 2);
+    cairo_set_source_rgb(cairo_context, 0.24, 0.24, 0.24);
+    cairo_stroke_preserve(cairo_context);
 
-    int xmin[total_height];
-    int xmax[total_height];
-
-    int linex_all[total_height]; // All X points
-    int linex[total_height];     // Anti-aliased X points
-
-    std::fill_n(xmin, sizeof(xmin)/sizeof(int), INT_MAX);
-    std::fill_n(xmax, sizeof(xmax)/sizeof(int), INT_MIN);
-
-    float slope;
-    bool left_edge;
-
-    // Find the minimum and maximum X coords of the line
-    // depending on if it is a left or right edge
-    auto plot = [&](int x, int y, float brightess) {
-        bool transparent = slope < 0.5f && brightess < 0.5f;
-
-        if (left_edge) {
-            if (x > linex[y]) {
-                linex_all[y] = x;
-                if (!transparent) linex[y] = x;
-            }
-        }
-        else {
-            if (x < linex[y]) {
-                linex_all[y] = x;
-                if (!transparent) linex[y] = x;
-            }
-        }
-    };
-
-    // Loop through each edge
-    for (auto i = 0; i < poly.size(); i++) {
-        float x0 = poly.at(i+0).x;
-        float y0 = poly.at(i+0).y;
-
-        float x1 = poly.at(i+1).x;
-        float y1 = poly.at(i+1).y;
-
-        // Find the slope of the line
-        float dx = x1 - x0;
-        float dy = y1 - y0;
-        slope = std::abs(!dx ? 1.0f : dy / dx);
-
-        // Figure out if this edge is on the left or right
-        auto p = poly.at(i+0) + (poly.at(i+1) - poly.at(i+0))/2 + Vec2f(1, 0);
-        left_edge = poly.point_inside(p);
-
-        std::fill_n(linex_all, sizeof(linex_all)/sizeof(int), left_edge ? INT_MIN : INT_MAX);
-        std::fill_n(linex, sizeof(linex)/sizeof(int), left_edge ? INT_MIN : INT_MAX);
-
-        draw_line(x0, y0,  x1, y1, Color(), plot);
-
-        auto valid = [](int val) -> bool {
-            return val != INT_MIN && val != INT_MAX;
-        };
-
-        // Find the minimum and maximum x coords for all of the edges
-        for (int y = std::min(y0, y1); y <= std::max(y0, y1); y++) {
-            int val;
-            if (valid(linex[y]))
-                val = linex[y];
-            else if (valid(linex_all[y]))
-                val = linex_all[y];
-            else
-                continue;
-
-            if (val < xmin[y]) xmin[y] = val;
-            if (val > xmax[y]) xmax[y] = val;
-        }
-    }
-
-    // Rasterize each scanline
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 0xff);
-    for (int y = bounds.min().y+1; y <= bounds.max().y; y++)
-        SDL_RenderDrawLine(renderer, xmin[y], y, xmax[y], y);
+    // And fill
+    cairo_set_source_rgb(cairo_context, color.r/255.0f, color.g/255.0f, color.b/255.0f);
+    cairo_fill(cairo_context);
+    cairo_restore(cairo_context);
 }
 
 void Renderer::draw_splitter(const Splitter &splitter) {
     if (!drawing())
         return;
-
-    // TODO
-    auto p = convert(splitter.p);
 
     // Calculate the rise and the run of the splitter
     float dist = std::sqrt(splitter.dx*splitter.dx + splitter.dy*splitter.dy);
@@ -278,10 +235,17 @@ void Renderer::draw_splitter(const Splitter &splitter) {
     dist = std::max(map_.size().x, map_.size().y);
 
     // Extend the splitter to reach both ends of the screen
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0x00, 0xff);
-    draw_line(p.x - run*dist, p.y - rise*dist, p.x + run*dist, p.y + rise*dist, Color(0xff, 0xff, 0x00));
-    draw_line(p.x - run*dist - 1, p.y - rise*dist, p.x + run*dist - 1, p.y + rise*dist, Color(0xff, 0xff, 0x00));
-    draw_line(p.x - run*dist + 1, p.y - rise*dist, p.x + run*dist + 1, p.y + rise*dist, Color(0xff, 0xff, 0x00));
+    cairo_save(cairo_context);
+    cairo_set_source_rgb(cairo_context, 0.5, 0.5, 0.0);
+
+    cairo_move_to(cairo_context, splitter.p.x - run*dist, splitter.p.y - rise*dist);
+    cairo_line_to(cairo_context, splitter.p.x + run*dist, splitter.p.y + rise*dist);
+
+    cairo_identity_matrix(cairo_context);
+    cairo_set_line_width(cairo_context, 4);
+
+    cairo_stroke(cairo_context);
+    cairo_restore(cairo_context);
 }
 
 void Renderer::add_poly(const Polyf &poly, const Color &color) {
@@ -298,11 +262,28 @@ void Renderer::add_line(const Linef &line, const Color &color) {
     lines.push_back(std::make_pair(line, color));
 }
 
+void Renderer::clear() {
+    if (!drawing())
+        return;
+
+    cairo_set_source_rgb(cairo_context, 0.0, 0.0, 0.0);
+    cairo_paint(cairo_context);
+}
+
 void Renderer::show() {
     if (!drawing())
         return;
 
+    // Update the SDL texture with the contents of the Cairo surface
+    auto data = cairo_image_surface_get_data(cairo_surface);
+    SDL_UpdateTexture(texture, NULL, data, cairo_image_surface_get_stride(cairo_surface));
+
+    // Clear and present the renderer
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
+
     SDL_Delay(10); // TODO: Remove
 }
 
@@ -329,87 +310,7 @@ bool Renderer::drawing() const {
     return window && renderer;
 }
 
-void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color, const std::function<void(int x, int y, float brightess)> &plot) {
-    // Xiaolin Wu's line algorithm
-    auto ipart  = [](float x) -> int { return static_cast<int>(x); };
-    auto round  = [](float x) -> float { return std::round(x); };
-    auto fpart  = [&](float x) -> float { return x - ipart(x); };
-    auto rfpart = [&](float x) -> float { return 1.0f - fpart(x); };
-
-    bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
-
-    if (steep) {
-        std::swap(x0, y0);
-        std::swap(x1, y1);
-    }
-    if (x0 > x1) {
-        std::swap(x0, x1);
-        std::swap(y0, y1);
-    }
-
-    float dx = x1 - x0;
-    float dy = y1 - y0;
-    float gradient = !dx ? 1.0f : dy / dx;
-
-    // Handle first endpoint
-    float xend = round(x0);
-    float yend = y0 + gradient * (xend - x0);
-    float xgap = rfpart(x0 + 0.5f);
-    int xpxl1 = xend;
-    int ypxl1 = ipart(yend);
-
-    if (steep) {
-        plot(ypxl1,   xpxl1, rfpart(yend) * xgap);
-        plot(ypxl1+1, xpxl1,  fpart(yend) * xgap);
-    }
-    else {
-        plot(xpxl1, ypxl1  , rfpart(yend) * xgap);
-        plot(xpxl1, ypxl1+1,  fpart(yend) * xgap);
-    }
-    float intery = yend + gradient;
-
-    // Handle second endpoint
-    xend = round(x1);
-    yend = y1 + gradient * (xend - x1);
-    xgap = fpart(x1 + 0.5f);
-    int xpxl2 = xend;
-    int ypxl2 = ipart(yend);
-
-    if (steep) {
-        plot(ypxl2  , xpxl2, rfpart(yend) * xgap);
-        plot(ypxl2+1, xpxl2,  fpart(yend) * xgap);
-    }
-    else {
-        plot(xpxl2, ypxl2,   rfpart(yend) * xgap);
-        plot(xpxl2, ypxl2+1, fpart(yend) * xgap);
-    }
-
-    // Main loop
-    if (steep) {
-        for (int x = xpxl1 + 1; x < xpxl2; x++) {
-            plot(ipart(intery),   x, rfpart(intery));
-            plot(ipart(intery)+1, x, fpart(intery));
-            intery = intery + gradient;
-        }
-    }
-    else {
-        for (int x = xpxl1 + 1; x < xpxl2; x++) {
-            plot(x, ipart(intery),   rfpart(intery));
-            plot(x, ipart(intery)+1, fpart(intery));
-            intery = intery + gradient;
-       }
-    }
-}
-
-void Renderer::draw_line(float x0, float y0, float x1, float y1, const Color &color) {
-    auto plot = [&](int x, int y, float brightness) {
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255*brightness);
-        SDL_RenderDrawPoint(renderer, x, y);
-    };
-
-    draw_line(x0, y0, x1, y1, color, plot);
-}
-
+/*
 void Renderer::calc_aspect(int width, int height) {
     auto want_aspect = static_cast<float>(map_.size().x) / static_cast<float>(map_.size().y);
     auto real_aspect = static_cast<float>(width) / static_cast<float>(height);
@@ -442,3 +343,4 @@ Vec2f Renderer::convert(const Vec2f &p) const {
         converty(p.y)
     );
 }
+*/

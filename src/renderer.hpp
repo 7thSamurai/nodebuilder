@@ -47,7 +47,9 @@ public:
     void add_poly(const Polyf &poly, const Color &color);
     void add_line(const Linef &line, const Color &color);
 
+    void clear();
     void show();
+
     bool running();
     bool drawing() const;
 

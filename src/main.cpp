@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
                 title = "Node Builder - " + name;
 
             Renderer renderer(title, 1024, 768, map);
+            renderer.clear();
             renderer.draw_map();
             renderer.show();
 
@@ -106,6 +107,7 @@ int main(int argc, char **argv) {
                 return 1;
             }
 
+            renderer.clear();
             renderer.draw_map();
             renderer.show();
 
@@ -122,6 +124,7 @@ int main(int argc, char **argv) {
             }
 
             while (draw) {
+                renderer.clear();
                 renderer.draw_map_outline();
                 renderer.show();
 

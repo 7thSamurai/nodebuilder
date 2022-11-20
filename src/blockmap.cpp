@@ -26,9 +26,8 @@ BlockMap::BlockMap(Map &map) : map_(map) {
 void BlockMap::build(Renderer &renderer) {
     // Draw a grid representing the block map
     auto draw_grid = [&]() {
-        renderer.draw_map_outline();
-
-        const Color color(0x10, 0x10, 0x10);
+        renderer.clear();
+        const Color color(0x20, 0x20, 0x20);
 
         // Draw the horizontal lines
         Vec2f pos(map_.offset().x, map_.offset().y);
@@ -43,6 +42,8 @@ void BlockMap::build(Renderer &renderer) {
             renderer.draw_line(Linef(pos, pos + Vec2f(0.0f, map_.size().y)), color);
             pos.x += block_size;
         }
+
+        renderer.draw_map_outline();
     };
 
     // Generate the blocks

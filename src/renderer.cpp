@@ -60,16 +60,29 @@ Renderer::Renderer(const std::string &name, unsigned int width, unsigned int hei
     cairo_set_line_join(cairo_context, CAIRO_LINE_JOIN_BEVEL);
 
     // Fix the aspect ratio
-    //calc_aspect(width, height);
+    auto want_aspect = static_cast<float>(map_.size().x) / static_cast<float>(map_.size().y);
+    auto real_aspect = static_cast<float>(width) / static_cast<float>(height);
+
+    float scale;
+    if (want_aspect > real_aspect)
+        scale = static_cast<float>(width) / static_cast<float>(map_.size().x);
+    else
+        scale = static_cast<float>(height) / static_cast<float>(map_.size().y);
+
+    width_  = map_.size().x * scale;
+    height_ = map_.size().y * scale;
+
+    offsetx_ = (width - width_)   / 2;
+    offsety_ = (height - height_) / 2;
 
     // Flip the Y direction
     cairo_matrix_t flip_y;
     cairo_matrix_init(&flip_y, 1, 0, 0, -1, 0, 0);
     cairo_set_matrix(cairo_context, &flip_y);
-    cairo_translate(cairo_context, 0, -height);
+    cairo_translate(cairo_context, offsetx_, -height + offsety_);
 
     // Translate and scale the matrix according to the map size
-    cairo_scale(cairo_context, static_cast<float>(width) / map.size().x, static_cast<float>(height) / map.size().y);
+    cairo_scale(cairo_context, static_cast<float>(width_) / map.size().x, static_cast<float>(height_) / map.size().y);
     cairo_translate(cairo_context, -map.offset().x, -map.offset().y);
 }
 
@@ -309,38 +322,3 @@ bool Renderer::running() {
 bool Renderer::drawing() const {
     return window && renderer;
 }
-
-/*
-void Renderer::calc_aspect(int width, int height) {
-    auto want_aspect = static_cast<float>(map_.size().x) / static_cast<float>(map_.size().y);
-    auto real_aspect = static_cast<float>(width) / static_cast<float>(height);
-
-    float scale;
-
-    if (want_aspect > real_aspect)
-        scale = static_cast<float>(width) / static_cast<float>(map_.size().x);
-    else
-        scale = static_cast<float>(height) / static_cast<float>(map_.size().y);
-
-    width_  = map_.size().x * scale;
-    height_ = map_.size().y * scale;
-
-    offsetx_ = (width - width_)   / 2;
-    offsety_ = (height - height_) / 2;
-}
-
-float Renderer::convertx(float x) const {
-    return offsetx_ + (x - map_.offset().x) / map_.size().x * width_;
-}
-
-float Renderer::converty(float y) const {
-    return offsety_ + height_- (y - map_.offset().y) / map_.size().y * height_;
-}
-
-Vec2f Renderer::convert(const Vec2f &p) const {
-    return Vec2f(
-        convertx(p.x),
-        converty(p.y)
-    );
-}
-*/

@@ -24,7 +24,8 @@ Todo
 - [x] Add Blockmap generation
 - [x] Add build animation rendering
 - [ ] Add Reject generation
-- [ ] Improve rendering quality
+- [x] Improve rendering quality
+- [ ] Add text rendering messages
 
 ## Copyright
 

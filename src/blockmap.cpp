@@ -50,8 +50,9 @@ void BlockMap::build(Renderer &renderer) {
     for (int y = height-1; y >= 0; y--) {
         for (int x = 0; x < width; x++) {
             draw_grid();
-            gen(x, y, renderer);
-            renderer.show();
+
+            if(gen(x, y, renderer))
+                renderer.show();
         }
     }
 }
@@ -85,7 +86,7 @@ void BlockMap::save() {
     map_.replace_blockmap(&data[0], data.size());
 }
 
-void BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
+bool BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
     // Create a bounding box for this block
     auto box = Boxf(
         Vec2f(map_.offset().x + x*block_size, map_.offset().y + y*block_size),
@@ -124,4 +125,6 @@ void BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
 
         renderer.draw_box(box);
     }
+
+    return list.size();
 }

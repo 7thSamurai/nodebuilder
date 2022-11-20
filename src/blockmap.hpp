@@ -37,7 +37,7 @@ private:
     const float block_size = 128;
 
     // Generate a block
-    void gen(unsigned int x, unsigned int y, Renderer &renderer);
+    bool gen(unsigned int x, unsigned int y, Renderer &renderer);
 
     Map &map_;
     unsigned int width, height;

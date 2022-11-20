@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 #include <climits>
 
 Renderer::Renderer(const std::string &name, unsigned int width, unsigned int height, Map &map) : map_(map), running_(true) {
@@ -258,6 +259,30 @@ void Renderer::draw_splitter(const Splitter &splitter) {
     cairo_set_line_width(cairo_context, 4);
 
     cairo_stroke(cairo_context);
+    cairo_restore(cairo_context);
+}
+
+void Renderer::draw_text(const std::string &text) {
+    cairo_save(cairo_context);
+    cairo_set_source_rgb(cairo_context, 1.0, 1.0, 1.0);
+    cairo_identity_matrix(cairo_context);
+    
+    // Select the font
+    cairo_select_font_face(cairo_context, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cairo_context, 16);
+    
+    // Split at the newlines
+    std::stringstream ss(text);
+    std::string line;
+    int y = 16;
+
+    while (std::getline(ss, line, '\n')) {
+        // Render the text
+        cairo_move_to(cairo_context, 8, y);
+        cairo_show_text(cairo_context, line.c_str());
+        y += 16;
+    }
+
     cairo_restore(cairo_context);
 }
 

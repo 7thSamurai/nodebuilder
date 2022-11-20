@@ -271,11 +271,19 @@ void Renderer::draw_text(const std::string &text) {
     cairo_select_font_face(cairo_context, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cairo_context, 16);
     
-    // Split at the newlines
-    std::stringstream ss(text);
+    // Add the map information beforehand
+    std::stringstream ss;
+    ss << "Map Name: " << map_.map() << "\n";
+    ss << "Map Size: " << map_.size().x << "x" << map_.size().y << "\n";
+    ss << "Vertices Count: " << map_.num_vertices() << "\n";
+    ss << "Linedefs Count: " << map_.num_linedefs() << "\n";
+    ss << "Sectors  Count: " << map_.num_sectors() << "\n";
+    ss << "\n" << text;
+
     std::string line;
     int y = 16;
 
+    // Split at the newlines
     while (std::getline(ss, line, '\n')) {
         // Render the text
         cairo_move_to(cairo_context, 8, y);

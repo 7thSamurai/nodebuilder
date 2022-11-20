@@ -106,6 +106,7 @@ public:
     Boxi bounds () const;
     Vec2i offset() const;
     Vec2i size  () const;
+    std::string map() const;
 
     std::size_t num_things() const   { return things_.num(); }
     std::size_t num_linedefs() const { return linedefs_.num();  }

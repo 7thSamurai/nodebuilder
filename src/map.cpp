@@ -133,6 +133,10 @@ Vec2i Map::size() const {
     return bounds_.max() - bounds_.min();
 }
 
+std::string Map::map() const {
+    return map_;
+}
+
 void Map::find_bounds() {
     if (!num_vertices()) {
         bounds_ = Box(Vec2i(0, 0), Vec2i(0, 0));

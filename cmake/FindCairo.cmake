@@ -11,6 +11,14 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
+if(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(CAIRO_LIB_PATH_SUFFIX lib/x64)
+    else()
+        set(CAIRO_LIB_PATH_SUFFIX lib/x86)
+    endif()
+endif()
+
 if(CAIRO_INCLUDE_DIRS AND CAIRO_LIBRARIES)
 
   # in cache already
@@ -40,6 +48,7 @@ if(CAIRO_FOUND)
 
   find_library(CAIRO_LIBRARY cairo
                HINTS ${_pc_cairo_LIBRARY_DIRS}
+               PATH_SUFFIXES ${CAIRO_LIB_PATH_SUFFIX}
   )
   set(CAIRO_LIBRARIES "${CAIRO_LIBRARY}")
 

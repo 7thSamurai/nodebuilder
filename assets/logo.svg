@@ -19,10 +19,10 @@
    xmlns:svg="http://www.w3.org/2000/svg">
 
   <style>
-    #text2 { fill:#d8dbe1; }
+    #text { fill:#d8dbe1; }
 
     @media (prefers-color-scheme: light) {
-      #text2 { fill:#121419; }
+      #text { fill:#121419; }
     }
   </style>
 

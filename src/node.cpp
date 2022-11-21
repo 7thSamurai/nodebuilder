@@ -16,7 +16,7 @@
 #include "node.hpp"
 #include "renderer.hpp"
 #include <climits>
-#include "SDL2/SDL.h"
+#include "SDL.h"
 
 Node::Node() : left_(nullptr), right_(nullptr) {
 }

@@ -24,7 +24,7 @@
 #include "splitter.hpp"
 #include "color.hpp"
 
-#include "SDL2/SDL.h"
+#include "SDL.h"
 #include "cairo.h"
 
 class Map;

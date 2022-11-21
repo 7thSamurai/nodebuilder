@@ -263,6 +263,9 @@ void Renderer::draw_splitter(const Splitter &splitter) {
 }
 
 void Renderer::draw_text(const std::string &text) {
+    if (!drawing())
+        return;
+
     cairo_save(cairo_context);
     cairo_set_source_rgb(cairo_context, 1.0, 1.0, 1.0);
     cairo_identity_matrix(cairo_context);

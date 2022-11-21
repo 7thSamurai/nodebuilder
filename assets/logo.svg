@@ -17,6 +17,15 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+
+  <style>
+    #text2 { fill:#d8dbe1; }
+
+    @media (prefers-color-scheme: light) {
+      #text2 { fill:#121419; }
+    }
+  </style>
+
   <sodipodi:namedview
      id="namedview7"
      pagecolor="#505050"

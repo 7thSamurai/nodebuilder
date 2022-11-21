@@ -51,6 +51,9 @@ void BlockMap::build(Renderer &renderer) {
     // Generate the blocks
     for (int y = height-1; y >= 0; y--) {
         for (int x = 0; x < width; x++) {
+            if (!renderer.running())
+                return;
+
             draw_grid();
 
             if (gen(x, y, renderer)) {
@@ -60,9 +63,9 @@ void BlockMap::build(Renderer &renderer) {
                     "\nBlocks processed: " + std::to_string(block_count++)
                 );
 
-                renderer.show(); 
+                renderer.show();
             }
-        }  
+        }
     }
 }
 

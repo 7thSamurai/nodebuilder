@@ -103,6 +103,12 @@ int main(int argc, char **argv) {
             // Generate the Blockmap
             BlockMap blockmap(map);
             blockmap.build(renderer);
+
+            if (!renderer.running()) {
+                std::cout << "\nTerminated" << std::endl;
+                return 1;
+            }
+
             blockmap.save();
 
             // Save all the map related lumps to the WAD

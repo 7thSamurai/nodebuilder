@@ -24,28 +24,6 @@ BlockMap::BlockMap(Map &map) : map_(map) {
 }
 
 void BlockMap::build(Renderer &renderer) {
-    // Draw a grid representing the block map
-    auto draw_grid = [&]() {
-        renderer.clear();
-        const Color color(0x20, 0x20, 0x20);
-
-        // Draw the horizontal lines
-        Vec2f pos(map_.offset().x, map_.offset().y);
-        for (auto y = 0; y <= height; y++) {
-            renderer.draw_line(Linef(pos, pos + Vec2f(map_.size().x, 0.0f)), color);
-            pos.y += block_size;
-        }
-
-        // Draw the vertical lines
-        pos = Vec2f(map_.offset().x, map_.offset().y);
-        for (auto x = 0; x <= width; x++) {
-            renderer.draw_line(Linef(pos, pos + Vec2f(0.0f, map_.size().y)), color);
-            pos.x += block_size;
-        }
-
-        renderer.draw_map_outline();
-    };
-
     int block_count = 0;
 
     // Generate the blocks
@@ -53,8 +31,6 @@ void BlockMap::build(Renderer &renderer) {
         for (int x = 0; x < width; x++) {
             if (!renderer.running())
                 return;
-
-            draw_grid();
 
             if (gen(x, y, renderer)) {
                 // Draw some stats
@@ -99,6 +75,28 @@ void BlockMap::save() {
 }
 
 bool BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
+    // Draw a grid representing the block map
+    auto draw_grid = [&]() {
+        renderer.clear();
+        const Color color(0x20, 0x20, 0x20);
+
+        // Draw the horizontal lines
+        Vec2f pos(map_.offset().x, map_.offset().y);
+        for (auto y = 0; y <= height; y++) {
+            renderer.draw_line(Linef(pos, pos + Vec2f(map_.size().x, 0.0f)), color);
+            pos.y += block_size;
+        }
+
+        // Draw the vertical lines
+        pos = Vec2f(map_.offset().x, map_.offset().y);
+        for (auto x = 0; x <= width; x++) {
+            renderer.draw_line(Linef(pos, pos + Vec2f(0.0f, map_.size().y)), color);
+            pos.x += block_size;
+        }
+
+        renderer.draw_map_outline();
+    };
+
     // Create a bounding box for this block
     auto box = Boxf(
         Vec2f(map_.offset().x + x*block_size, map_.offset().y + y*block_size),
@@ -124,19 +122,23 @@ bool BlockMap::gen(unsigned int x, unsigned int y, Renderer &renderer) {
     lists[list].push_back(y*width + x);
 
     if (renderer.drawing()) {
-        const auto color = Color::random();
+        if (list.size()) {
+            draw_grid();
+            const auto color = Color::random();
 
-        // Draw the lines that are inside the box
-        for (const auto &i : list) {
-            auto p1 = Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y);
-            auto p2 = Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y);
+            // Draw the lines that are inside the box
+            for (const auto &i : list) {
+                auto p1 = Vec2f(vertices[linedefs[i].start].x, vertices[linedefs[i].start].y);
+                auto p2 = Vec2f(vertices[linedefs[i].end].x, vertices[linedefs[i].end].y);
 
-            auto line = box.clip(Linef(p1, p2));
-            renderer.add_line(line, color);
+                auto line = box.clip(Linef(p1, p2));
+                renderer.add_line(line, color);
+            }
+
+            renderer.draw_box(box);
+            return true;
         }
-
-        renderer.draw_box(box);
     }
 
-    return list.size();
+    return false;
 }

@@ -92,6 +92,12 @@ int main(int argc, char **argv) {
             // Generate the BSP
             Bsp bsp(map);
             bsp.build(renderer);
+
+            if (!renderer.running()) {
+                std::cout << "\nTerminated" << std::endl;
+                return 1;
+            }
+
             bsp.save();
 
             // Generate the Blockmap
@@ -99,13 +105,8 @@ int main(int argc, char **argv) {
             blockmap.build(renderer);
             blockmap.save();
 
-            // Save all the map realted lumps to the WAD
+            // Save all the map related lumps to the WAD
             map.save();
-
-            if (!renderer.running()) {
-                std::cout << "\nKilled" << std::endl;
-                return 1;
-            }
 
             auto map_time_end = std::chrono::high_resolution_clock::now();
             total_time += std::chrono::duration_cast<std::chrono::milliseconds>(map_time_end - map_time_start);

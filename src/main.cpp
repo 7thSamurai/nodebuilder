@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 
             std::string title;
             if (draw)
-                title = "Node Builder - " + name;
+                title = "DOOM NodeBuilder - " + name;
 
             Renderer renderer(title, 1024, 768, map);
             renderer.clear();
@@ -107,10 +107,6 @@ int main(int argc, char **argv) {
                 return 1;
             }
 
-            renderer.clear();
-            renderer.draw_map();
-            renderer.show();
-
             auto map_time_end = std::chrono::high_resolution_clock::now();
             total_time += std::chrono::duration_cast<std::chrono::milliseconds>(map_time_end - map_time_start);
 
@@ -120,12 +116,13 @@ int main(int argc, char **argv) {
             }
             else {
                 auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(map_time_end - map_time_start);
-                std::cout << dur.count() << "\tms" << std::endl;
+                std::cout << dur.count() << "\tmsec" << std::endl;
             }
 
             while (draw) {
                 renderer.clear();
                 renderer.draw_map_outline();
+                renderer.draw_text("All Nodes built.\nAll Blocks processed.");
                 renderer.show();
 
                 if (!renderer.running())
@@ -134,7 +131,7 @@ int main(int argc, char **argv) {
         }
 
         if (maps.size() > 1)
-            std::cout << "\nAll maps proccessed in " << total_time.count() << " ms" << std::endl;
+            std::cout << "\nAll maps processed in " << total_time.count() << " ms" << std::endl;
 
         std::cout << "Saving to WAD..." << std::endl;
         wad.save("output.wad");

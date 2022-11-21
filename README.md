@@ -25,7 +25,7 @@ Todo
 - [x] Add build animation rendering
 - [ ] Add Reject generation
 - [x] Improve rendering quality
-- [ ] Add text rendering messages
+- [x] Add text rendering messages
 
 ## Copyright
 

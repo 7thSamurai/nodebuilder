@@ -26,3 +26,11 @@ target_link_libraries(
     SDL2::SDL2main
     ${CAIRO_LIBRARIES}
 )
+
+if(WIN32)
+    add_custom_command(TARGET nodebuilder POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${SDL2_RUNTIME_LIBRARY}
+            ${CAIRO_RUNTIME_LIBRARY}
+            $<TARGET_FILE_DIR:nodebuilder>)
+endif()

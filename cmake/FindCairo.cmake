@@ -53,6 +53,18 @@ if(CAIRO_FOUND)
   find_package_handle_standard_args(Cairo DEFAULT_MSG CAIRO_LIBRARIES CAIRO_INCLUDE_DIRS)
 endif(CAIRO_FOUND)
 
+if(WIN32 AND CAIRO_LIBRARIES)
+    find_file(CAIRO_RUNTIME_LIBRARY
+        NAMES
+        cairo.dll
+        HINTS
+        ${CAIRO_LIB_HINTS}
+        PATHS
+        ${CAIRO_ROOT_DIR}
+        ENV CAIRODIR
+        PATH_SUFFIXES bin lib ${CAIRO_LIB_PATH_SUFFIX})
+endif()
+
 endif(CAIRO_INCLUDE_DIRS AND CAIRO_LIBRARIES)
 
 mark_as_advanced(
@@ -60,3 +72,4 @@ mark_as_advanced(
   CAIRO_INCLUDE_DIRS
   CAIRO_LIBRARIES
 )
+

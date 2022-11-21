@@ -27,10 +27,10 @@ class Node
 {
 public:
     Node();
-    Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer);
+    Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer, int &num_nodes, int &num_segs, int &num_ssectors);
     ~Node();
 
-    void create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer);
+    void create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer, int &num_nodes, int &num_segs, int &num_ssectors);
 
     const Node *left () const { return left_; }
     const Node *right() const { return right_; }

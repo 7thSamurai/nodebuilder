@@ -21,8 +21,8 @@
 Node::Node() : left_(nullptr), right_(nullptr) {
 }
 
-Node::Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) : left_(nullptr), right_(nullptr) {
-    create(segs, poly, renderer);
+Node::Node(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer, int &num_nodes, int &num_segs, int &num_ssectors) : left_(nullptr), right_(nullptr) {
+    create(segs, poly, renderer, num_nodes, num_segs, num_ssectors);
 }
 
 Node::~Node() {
@@ -30,9 +30,11 @@ Node::~Node() {
     if (right_) delete right_;
 }
 
-void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer) {
+void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &renderer, int &num_nodes, int &num_segs, int &num_ssectors) {
     if (!renderer.running())
         return;
+
+    num_nodes++;
 
     // Find the bounding box of this node
     bounds_ = Boxf(segs[0].p1(), segs[0].p1());
@@ -47,9 +49,7 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
     for (const auto &seg : segs)
         renderer.draw_line(seg.line());
 
-    renderer.show();
     renderer.draw_poly(poly);
-    renderer.show();
 
     int best_score = INT_MAX;
     int splitter   = 0;
@@ -68,11 +68,23 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
     if (best_score == INT_MAX) {
         segs_  = segs;
         renderer.add_poly(carve(segs, poly), Color::random());
+        
+        num_segs += segs.size();
+        num_ssectors++;
 
         return;
     }
 
     renderer.draw_splitter(Splitter(segs[splitter]));
+    
+    // Draw some stats
+    renderer.draw_text(
+        std::string("Building Nodes...") +
+        "\nNode    #: " + std::to_string(num_nodes) +
+        "\nSeg     #: " + std::to_string(num_segs) +
+        "\nSSector #: " + std::to_string(num_ssectors)
+    );
+    
     renderer.show();
 
     // Now actually split the node
@@ -80,8 +92,8 @@ void Node::create(const std::vector<Seg> &segs, const Polyf &poly, Renderer &ren
     split(segs, splitter, front_segs, back_segs);
     auto polys = Splitter(segs[splitter]).cut(poly);
 
-    left_  = new Node(front_segs, polys.second, renderer);
-    right_ = new Node(back_segs, polys.first, renderer);
+    left_  = new Node(front_segs, polys.second, renderer, num_nodes, num_segs, num_ssectors);
+    right_ = new Node(back_segs, polys.first, renderer, num_nodes, num_segs, num_ssectors);
 }
 
 int Node::splitter_score(const std::vector<Seg> &segs, unsigned int splitter_index) const {

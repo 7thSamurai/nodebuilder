@@ -33,7 +33,11 @@ void Bsp::build(Renderer &renderer) {
     poly.add(Vec2f(map_.bounds().max().x, map_.bounds().max().y));
     poly.add(Vec2f(map_.bounds().max().x, map_.bounds().min().y));
 
-    root = new Node(segs, poly, renderer);
+    int num_nodes = 0;
+    int num_segs = 0;
+    int num_ssectors = 0;
+
+    root = new Node(segs, poly, renderer, num_nodes, num_segs, num_ssectors);
 }
 
 void Bsp::save() {

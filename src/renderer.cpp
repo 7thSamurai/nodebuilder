@@ -275,9 +275,9 @@ void Renderer::draw_text(const std::string &text) {
     std::stringstream ss;
     ss << "Map Name: " << map_.map() << "\n";
     ss << "Map Size: " << map_.size().x << "x" << map_.size().y << "\n";
-    ss << "Vertices Count: " << map_.num_vertices() << "\n";
-    ss << "Linedefs Count: " << map_.num_linedefs() << "\n";
-    ss << "Sectors  Count: " << map_.num_sectors() << "\n";
+    ss << "Vertices #: " << map_.num_vertices() << "\n";
+    ss << "Linedefs #: " << map_.num_linedefs() << "\n";
+    ss << "Sectors  #: " << map_.num_sectors() << "\n";
     ss << "\n" << text;
 
     std::string line;

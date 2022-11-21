@@ -1,7 +1,10 @@
-# Nodebuilder (WIP)
+# DOOM NodeBuilder
 
-An experimental **Doom** **Block-Map** and **Node-Builder** that also renders cool animations of **BSPs** being generated. 
-Written in **C++** using portable libraries. Designed for both Windows and Unix based systems.
+![license](https://img.shields.io/github/license/7thSamurai/nodebuilder)
+![build](https://img.shields.io/github/workflow/status/7thSamurai/nodebuilder/CMake)
+
+An experimental **DOOM Node-Builder** that preprocesses DOOM 1 & 2 maps and renders cool animations of the **BSPs** and **Block Maps** being generated. 
+Written in **C++ 17** with *SDL2* and *Cairo*. For both Windows and Unix based systems.
 
 ## Getting starated
 

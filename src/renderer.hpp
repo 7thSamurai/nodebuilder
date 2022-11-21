@@ -68,6 +68,7 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
+    std::uint64_t last_update;
 
     // Cairo stuff
     cairo_t *cairo_context;

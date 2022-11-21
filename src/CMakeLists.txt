@@ -23,5 +23,6 @@ target_link_libraries(
     nodebuilder
     PRIVATE
     SDL2::SDL2
+    SDL2::SDL2main
     ${CAIRO_LIBRARIES}
 )

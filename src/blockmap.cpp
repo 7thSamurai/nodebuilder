@@ -46,14 +46,23 @@ void BlockMap::build(Renderer &renderer) {
         renderer.draw_map_outline();
     };
 
+    int block_count = 0;
+
     // Generate the blocks
     for (int y = height-1; y >= 0; y--) {
         for (int x = 0; x < width; x++) {
             draw_grid();
 
-            if(gen(x, y, renderer))
-                renderer.show();
-        }
+            if (gen(x, y, renderer)) {
+                // Draw some stats
+                renderer.draw_text(
+                    std::string("Building Blockmap...") +
+                    "\nBlocks processed: " + std::to_string(block_count++)
+                );
+
+                renderer.show(); 
+            }
+        }  
     }
 }
 

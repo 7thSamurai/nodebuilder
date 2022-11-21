@@ -16,7 +16,14 @@
 #pragma once
 
 #include <cstdint>
+
+#ifdef _WIN32
+#define LITTLE_ENDIAN 0
+#define BIG_ENDIAN 1
+#define BYTE_ORDER LITTLE_ENDIAN
+#else
 #include <endian.h>
+#endif
 
 namespace Common {
 

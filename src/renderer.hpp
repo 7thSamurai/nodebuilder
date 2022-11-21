@@ -49,7 +49,7 @@ public:
     void add_line(const Linef &line, const Color &color);
 
     void clear();
-    void show();
+    void show(float fps=30.0f);
 
     bool running();
     bool drawing() const;

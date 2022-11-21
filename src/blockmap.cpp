@@ -39,7 +39,7 @@ void BlockMap::build(Renderer &renderer) {
                     "\nBlocks processed: " + std::to_string(block_count++)
                 );
 
-                renderer.show();
+                renderer.show(60.0f);
             }
         }
     }

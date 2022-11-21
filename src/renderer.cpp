@@ -316,7 +316,7 @@ void Renderer::clear() {
     cairo_paint(cairo_context);
 }
 
-void Renderer::show() {
+void Renderer::show(float fps) {
     if (!drawing())
         return;
 
@@ -342,7 +342,7 @@ void Renderer::show() {
     SDL_RenderCopy(renderer, texture, NULL, NULL);
 
     // Lock to 30 FPS
-    while (static_cast<float>(SDL_GetPerformanceCounter() - last_update) / static_cast<float>(SDL_GetPerformanceFrequency()) < (1.0f / 30.0f));
+    while (static_cast<float>(SDL_GetPerformanceCounter() - last_update) / static_cast<float>(SDL_GetPerformanceFrequency()) < (1.0f / fps));
     SDL_RenderPresent(renderer);
     last_update = SDL_GetPerformanceCounter();
 }

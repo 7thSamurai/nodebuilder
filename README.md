@@ -6,6 +6,8 @@
 An experimental **DOOM Node-Builder** that preprocesses maps for the classic DOOM 1 & 2 games, with the option to render cool animations of the **BSPs** and **Block Maps** being generated. 
 Written in **C++ 17** with *SDL2* and *Cairo*. For both Windows and Unix based systems.
 
+https://user-images.githubusercontent.com/76573299/203216475-67d4978e-ca6e-484a-99a0-99113640108c.mp4
+
 ## About
 
 For those of you who are unfamiliar with the technology behind the engine that powered the hit 1993 game **DOOM**, extensive preprocessing was used

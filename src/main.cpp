@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             if (draw)
                 title = "DOOM NodeBuilder - " + name;
 
-            Renderer renderer(title, 1024, 768, map);
+            Renderer renderer(title, 1280, 720, map);
             renderer.clear();
             renderer.draw_map();
             renderer.show();

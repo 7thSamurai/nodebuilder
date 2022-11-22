@@ -4,7 +4,7 @@
 ![build](https://img.shields.io/github/workflow/status/7thSamurai/nodebuilder/CMake)
 
 An experimental **DOOM Node-Builder** that preprocesses maps for the classic DOOM 1 & 2 games, with the option to render cool animations of the **BSPs** and **Block Maps** being generated. 
-Written in **C++ 17** with *SDL2* and *Cairo*. For both Windows and Unix based systems.
+Written in **C++ 17** with *SDL2* and *Cairo*. For both Windows and Unix based systems. **WARNING**: *This utility is still in development, and therefore still contains various bugs that need fixed.*
 
 https://user-images.githubusercontent.com/76573299/203216475-67d4978e-ca6e-484a-99a0-99113640108c.mp4
 
@@ -79,6 +79,10 @@ $ cmake --build . --config Release
 *Note: Instead of running the very last command, you have the option to alternatively open the generated .sln file and use Visual Studio directly.*
 
 ## Running
+
+A **DOOM** WAD file is required to use this program. If you do not own **DOOM**, I suggest using the original shareware WAD which is freely available, and can be found [here](https://doomwiki.org/wiki/DOOM1.WAD).
+
+You may then start the NodeBuilder by running:
 
 ```
 $ bin/nodebuilder [WAD PATH] [MAPS...] [OPTIONS...]

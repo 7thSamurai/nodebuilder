@@ -1,7 +1,7 @@
 <h1 align="center" ><img height="100px" src="assets/logo.svg"></h1>
 
 ![license](https://img.shields.io/github/license/7thSamurai/nodebuilder)
-![build](https://img.shields.io/github/workflow/status/7thSamurai/nodebuilder/CMake)
+![build](https://img.shields.io/github/actions/workflow/status/7thSamurai/nodebuilder/build.yml?branch=main)
 
 An experimental **DOOM Node-Builder** that preprocesses maps for the classic DOOM 1 & 2 games, with the option to render cool animations of the **BSPs** and **Block Maps** being generated. 
 Written in **C++ 17** with *SDL2* and *Cairo*. For both Windows and Unix based systems. **WARNING**: *This utility is still in development, and therefore still contains various bugs that need fixed.*
